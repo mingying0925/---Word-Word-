@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title th:text="#{error.title} + ' - SkillBridge'">错误 - SkillBridge</title>
+  <th:block th:replace="~{common/layout :: styles}"/>
+  <style>
+    .error-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .error-card {
+      width: 100%;
+      max-width: 480px;
+      padding: 48px 40px 40px;
+      text-align: center;
+      border-top: 3px solid #D4A0A0;
+    }
+    .error-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: rgba(212, 160, 160, 0.20);
+      margin: 0 auto 20px;
+      color: #8A5A5A;
+      font-size: 28px;
+    }
+    .error-card h1 {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--morandi-text-primary);
+      margin-bottom: 8px;
+      letter-spacing: 0.3px;
+    }
+    .error-card .error-msg {
+      font-size: 14px;
+      color: var(--morandi-text-secondary);
+      margin-bottom: 24px;
+      line-height: 1.6;
+      padding: 12px 16px;
+      background: rgba(212, 160, 160, 0.15);
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(212, 160, 160, 0.25);
+    }
+    .error-links {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <th:block th:replace="~{common/layout :: bg-cursor}"/>
+
+  <div class="error-wrap">
+    <div class="error-card glass-card">
+      <div class="error-icon">!</div>
+      <h1 th:text="#{error.heading}">发生错误</h1>
+      <div class="error-msg" th:text="${error} ?: #{error.unknown}">错误信息</div>
+      <div class="error-links">
+        <a th:href="@{/}" class="btn-spring" th:text="#{error.backHome}">返回首页</a>
+        <a th:href="@{/teacher/activities}" class="btn-spring btn-spring--secondary" th:text="#{error.activityList}">活动列表</a>
+      </div>
+    </div>
+  </div>
+
+  <th:block th:replace="~{common/layout :: scripts}"/>
+</body>
+</html>

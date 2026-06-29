@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="#{teacher.submissions.title} + ' - SkillBridge'">提交列表 - SkillBridge</title>
+    <th:block th:replace="~{common/layout :: styles}"/>
+    <style>
+        .info-bar {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: var(--morandi-text-secondary);
+        }
+        .info-bar span strong { color: var(--morandi-text-primary); }
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .toolbar h2 {
+            margin: 0;
+            font-size: 16px;
+            color: var(--morandi-text-primary);
+        }
+        .toolbar-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn-spring:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; box-shadow: none; }
+
+        @media (max-width: 768px) {
+            .toolbar { flex-direction: column; align-items: flex-start; }
+            .info-bar { gap: 10px; }
+            .info-bar span { display: block; }
+        }
+    </style>
+</head>
+<body>
+<a href="#main-content" class="skip-link" th:text="#{a11y.skipToMain}">跳到主要内容</a>
+<th:block th:replace="~{common/layout :: bg-cursor}"/>
+
+<div class="page-wrap">
+    <div class="page-card glass-card" id="main-content">
+        <div class="page-top">
+            <h1><span th:text="#{teacher.submissions.title}">提交列表</span><span style="font-size:14px;color:var(--morandi-text-muted);margin-left:12px;" th:text="${activity.name}">活动名称</span></h1>
+            <div class="page-nav">
+                <a th:href="@{/teacher/activities}" class="link-morandi" th:text="#{nav.back} + ' ←'">← 活动列表</a>
+                <a th:href="@{/teacher/activity/{id}/roster(id=${activity.id})}" class="link-morandi" th:text="#{teacher.activityList.action.roster}">学生名单</a>
+                <a th:href="@{/teacher/dashboard}" class="link-morandi" th:text="#{nav.dashboard}">仪表盘</a>
+            </div>
+        </div>
+
+        <div th:if="${msg}" class="msg-morandi msg-morandi--success" th:text="${msg}" style="margin-bottom:16px;"></div>
+        <div th:if="${error}" class="msg-morandi msg-morandi--error" th:text="${error}" style="margin-bottom:16px;"></div>
+
+        <!-- 活动信息栏 -->
+        <div class="info-bar">
+            <span><strong th:text="#{teacher.submissions.info.activity}">活动：</strong><span th:text="${activity.name}">活动名称</span></span>
+            <span><strong th:text="#{teacher.submissions.info.deadline}">截止：</strong><span th:text="${activity.deadline != null ? #temporals.format(activity.deadline, 'yyyy-MM-dd HH:mm') : '—'}">—</span></span>
+            <span><strong th:text="#{teacher.submissions.info.status}">状态：</strong>
+                <span th:if="${activity.status == 0}" class="status-active" th:text="#{status.active}">报名中</span>
+                <span th:if="${activity.status == 1}" class="status-closed" th:text="#{status.closed}">已截止</span>
+            </span>
+            <span><strong th:text="#{teacher.submissions.info.count}">提交数：</strong><span th:text="${submissions != null ? submissions.size() : 0}">0</span></span>
+        </div>
+
+        <div class="toolbar">
+            <h2 th:text="#{teacher.submissions.section.records}">学生提交记录</h2>
+            <div class="toolbar-actions">
+                <a class="btn-spring btn-spring--secondary"
+                   th:href="@{/teacher/activity/{id}/export/excel(id=${activity.id})}"
+                   th:if="${not #lists.isEmpty(submissions)}"
+                   th:text="#{teacher.submissions.action.exportExcel}">
+                    导出 Excel
+                </a>
+                <button type="button" id="btn-export-zip" class="btn-spring btn-spring--secondary"
+                        th:attr="data-activity-id=${activity.id}"
+                        th:disabled="${#lists.isEmpty(submissions)}"
+                        th:text="#{teacher.submissions.action.exportZip}">
+                    一键批量导出所有 Word
+                </button>
+            </div>
+        </div>
+
+        <div th:if="${#lists.isEmpty(submissions)}">
+            <div class="empty-state" th:text="#{teacher.submissions.empty}">暂无学生提交。</div>
+        </div>
+
+        <div class="table-wrap" th:if="${not #lists.isEmpty(submissions)}">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th th:text="#{teacher.submissions.column.id}">提交ID</th>
+                    <th th:text="#{teacher.submissions.column.studentId}">学号</th>
+                    <th th:text="#{teacher.submissions.column.idCard}">身份证号</th>
+                    <th th:text="#{teacher.submissions.column.submitTime}">提交时间</th>
+                    <th th:text="#{teacher.submissions.column.actions}">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="s : ${submissions}">
+                    <td th:text="${s.id}">1</td>
+                    <td th:text="${s.studentId}">学号</td>
+                    <td th:text="${T(com.skillbridge.utils.CryptoUtil).mask(s.idCard)}">身份证号</td>
+                    <td th:text="${s.submitTime != null ? #temporals.format(s.submitTime, 'yyyy-MM-dd HH:mm:ss') : '—'}">—</td>
+                    <td>
+                        <a class="btn-download" th:href="@{/teacher/export/{sid}(sid=${s.id})}" th:text="#{teacher.submissions.action.exportWord}">导出 Word</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+(function () {
+    var i18nLoading = /*[[#{teacher.submissions.loading.zip}]]*/ '正在深度解析并打包所有学生文件，请稍候...';
+    var i18nSuccess = /*[[#{teacher.submissions.toast.zipSuccess}]]*/ '批量导出完成';
+    var i18nFailed = /*[[#{teacher.submissions.toast.zipFailed}]]*/ '批量导出失败';
+
+    var btn = document.getElementById('btn-export-zip');
+    if (!btn) return;
+
+    btn.addEventListener('click', function () {
+        var activityId = this.getAttribute('data-activity-id');
+        if (!activityId) return;
+
+        // 开启全屏模糊遮罩
+        if (typeof showLoading === 'function') {
+            showLoading(i18nLoading);
+        }
+
+        fetch('/teacher/activity/' + activityId + '/export/zip', { method: 'GET' })
+            .then(function (response) {
+                var contentType = response.headers.get('Content-Type') || '';
+                // 后端校验失败时返回 JSON 错误
+                if (contentType.indexOf('application/json') !== -1) {
+                    return response.json().then(function (data) {
+                        throw new Error(data.message || i18nFailed);
+                    });
+                }
+                if (!response.ok) {
+                    throw new Error(i18nFailed + ', HTTP ' + response.status);
+                }
+                // 从 Content-Disposition 解析下载文件名
+                var disposition = response.headers.get('Content-Disposition');
+                var fileName = '申报表汇总.zip';
+                if (disposition) {
+                    var m = disposition.match(/filename\*=UTF-8''([^;]+)/i);
+                    if (m) {
+                        fileName = decodeURIComponent(m[1]);
+                    } else {
+                        m = disposition.match(/filename="?([^";]+)"?/i);
+                        if (m) fileName = m[1];
+                    }
+                }
+                return response.blob().then(function (blob) {
+                    return { blob: blob, fileName: fileName };
+                });
+            })
+            .then(function (result) {
+                // ZIP 字节流下载完成后触发浏览器保存
+                var url = window.URL.createObjectURL(result.blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = result.fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                if (typeof showToast === 'function') {
+                    showToast(i18nSuccess, 'success');
+                }
+            })
+            .catch(function (err) {
+                if (typeof showToast === 'function') {
+                    showToast(err.message || i18nFailed, 'error');
+                }
+            })
+            .finally(function () {
+                // 下载启动后隐藏遮罩
+                if (typeof hideLoading === 'function') {
+                    hideLoading();
+                }
+            });
+    });
+})();
+</script>
+
+<th:block th:replace="~{common/layout :: scripts}"/>
+</body>
+</html>

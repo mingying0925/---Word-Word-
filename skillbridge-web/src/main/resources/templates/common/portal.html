@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title th:text="#{portal.title} + ' - SkillBridge'">选择入口 - SkillBridge</title>
+  <th:block th:replace="~{common/layout :: styles}"/>
+  <style>
+    .portal-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .portal-brand {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .portal-brand h1 {
+      font-size: 30px;
+      font-weight: 600;
+      color: var(--morandi-text-primary);
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .portal-brand p {
+      font-size: 14px;
+      color: var(--morandi-text-muted);
+      letter-spacing: 0.5px;
+    }
+    .portal-cards {
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+      max-width: 820px;
+    }
+    .portal-card {
+      flex: 1;
+      min-width: 300px;
+      max-width: 360px;
+      padding: 44px 36px;
+      text-align: center;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    .portal-card__icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin-bottom: 4px;
+    }
+    .portal-card--teacher .portal-card__icon {
+      background: var(--morandi-primary-light);
+      color: var(--morandi-primary);
+    }
+    .portal-card--student .portal-card__icon {
+      background: rgba(201, 169, 160, 0.18);
+      color: var(--morandi-secondary);
+    }
+    .portal-card__title {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--morandi-text-primary);
+      letter-spacing: 0.5px;
+    }
+    .portal-card__desc {
+      font-size: 13px;
+      color: var(--morandi-text-secondary);
+      line-height: 1.7;
+      min-height: 44px;
+    }
+    .portal-card__btn {
+      margin-top: 8px;
+      padding: 11px 36px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.20);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background 0.25s var(--spring-smooth),
+                  transform 0.30s var(--spring-bounce);
+    }
+    .portal-card--teacher .portal-card__btn {
+      background: var(--morandi-primary);
+      box-shadow: 0 2px 8px rgba(139, 164, 184, 0.25);
+    }
+    .portal-card--teacher .portal-card__btn:hover {
+      background: var(--morandi-primary-hover);
+      transform: scale(1.03);
+    }
+    .portal-card--student .portal-card__btn {
+      background: var(--morandi-secondary);
+      box-shadow: 0 2px 8px rgba(201, 169, 160, 0.25);
+    }
+    .portal-card--student .portal-card__btn:hover {
+      background: var(--morandi-secondary-hover);
+      transform: scale(1.03);
+    }
+    .portal-card--teacher {
+      border-top: 3px solid var(--morandi-primary);
+    }
+    .portal-card--student {
+      border-top: 3px solid var(--morandi-secondary);
+    }
+    .portal-footer {
+      margin-top: 40px;
+      font-size: 12px;
+      color: var(--morandi-text-muted);
+    }
+
+    /* ===== 移动端适配 ===== */
+    @media (max-width: 768px) {
+      .portal-brand h1 { font-size: 24px; }
+      .portal-brand { margin-bottom: 28px; }
+      .portal-cards { gap: 20px; }
+      .portal-card { padding: 32px 24px; min-width: 0; }
+    }
+    @media (max-width: 480px) {
+      .portal-wrap { padding: 16px; }
+      .portal-brand h1 { font-size: 20px; }
+      .portal-card { padding: 24px 18px; }
+      .portal-card__title { font-size: 18px; }
+      .portal-card__icon { width: 56px; height: 56px; font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+  <th:block th:replace="~{common/layout :: bg-cursor}"/>
+
+  <div class="portal-wrap">
+    <div class="portal-brand">
+      <h1 th:text="#{app.name}">SkillBridge</h1>
+      <p th:text="#{portal.brandDesc}">职业技能等级认定报名与文档自动化系统</p>
+    </div>
+
+    <div class="portal-cards">
+      <a th:href="@{/teacher/login}" class="portal-card glass-card portal-card--teacher">
+        <div class="portal-card__icon">&#128218;</div>
+        <div class="portal-card__title" th:text="#{portal.teacher.title}">教师入口</div>
+        <div class="portal-card__desc" th:text="#{portal.teacher.desc}">上传 Word 模板、管理报名活动、查看学生提交并导出文档</div>
+        <div class="portal-card__btn" th:text="#{portal.teacher.btn}">进入管理后台</div>
+      </a>
+
+      <a th:href="@{/student/login}" class="portal-card glass-card portal-card--student">
+        <div class="portal-card__icon">&#9994;</div>
+        <div class="portal-card__title" th:text="#{portal.student.title}">学生入口</div>
+        <div class="portal-card__desc" th:text="#{portal.student.desc}">通过学号与身份证号登录活动，在线填写报名表单并提交</div>
+        <div class="portal-card__btn" th:text="#{portal.student.btn}">进入报名填表</div>
+      </a>
+    </div>
+
+    <div class="portal-footer" th:text="#{portal.footer}">请根据您的身份选择对应入口</div>
+  </div>
+
+  <th:block th:replace="~{common/layout :: scripts}"/>
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title th:text="#{student.login.title} + ' - SkillBridge'">学生登录 - SkillBridge</title>
+  <th:block th:replace="~{common/layout :: styles}"/>
+  <style>
+    .login-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .login-card {
+      width: 100%;
+      max-width: 480px;
+      padding: 40px 36px 36px;
+      border-top: 3px solid var(--morandi-secondary);
+    }
+    .login-card .role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--morandi-secondary);
+      background: rgba(201, 169, 160, 0.18);
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+    .login-card h1 {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--morandi-text-primary);
+      margin-bottom: 4px;
+      letter-spacing: 0.5px;
+    }
+    .login-card .sub {
+      font-size: 13px;
+      color: var(--morandi-text-muted);
+      margin-bottom: 28px;
+    }
+    .login-card .activity-info {
+      background: rgba(255,255,255,0.25);
+      border: 1px solid var(--morandi-border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      margin-bottom: 24px;
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--morandi-text-secondary);
+    }
+    .login-card .activity-info strong {
+      color: var(--morandi-text-primary);
+    }
+    .login-card .form-group {
+      margin-bottom: 20px;
+    }
+    .login-card .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--morandi-text-secondary);
+      margin-bottom: 6px;
+    }
+    .login-card .btn-spring {
+      width: 100%;
+      margin-top: 8px;
+      padding: 12px 28px;
+      font-size: 15px;
+      background: var(--morandi-secondary);
+      box-shadow: 0 2px 8px rgba(201, 169, 160, 0.25);
+    }
+    .login-card .btn-spring:hover {
+      background: var(--morandi-secondary-hover);
+      box-shadow: 0 4px 16px rgba(201, 169, 160, 0.35);
+    }
+    .login-card .field-error {
+      font-size: 12px;
+      color: #8A5A5A;
+      margin-top: 4px;
+      display: none;
+    }
+    .login-card .field-error.show {
+      display: block;
+    }
+    .login-card .back-portal {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      font-size: 13px;
+    }
+
+    @media (max-width: 480px) {
+      .login-wrap { padding: 12px; }
+      .login-card { padding: 28px 20px 24px; }
+      .login-card h1 { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <th:block th:replace="~{common/layout :: bg-cursor}"/>
+
+  <div class="login-wrap">
+    <div class="login-card glass-card">
+      <span class="role-badge">&#9994; <span th:text="#{student.login.title}">学生登录</span></span>
+      <h1 th:text="#{student.login.title}">学生报名登录</h1>
+      <div class="sub">请输入姓名、学号和身份证号进行身份验证</div>
+
+      <div class="activity-info" th:if="${activity != null}">
+        <div><strong>活动：</strong><span th:text="${activity.name}">活动名称</span></div>
+        <div th:if="${activity.deadline != null}">
+          <strong>截止时间：</strong>
+          <span th:text="${#temporals.format(activity.deadline, 'yyyy-MM-dd HH:mm')}">—</span>
+        </div>
+        <div th:if="${activity.status != null and activity.status == 1}" style="color: #e67e22; font-weight: 600; margin-top: 8px;">
+          ⚠ 该活动已截止报名，无法提交。
+        </div>
+      </div>
+
+      <div th:if="${error}" class="msg-morandi msg-morandi--error" th:text="${error}">错误信息</div>
+
+      <form th:action="@{/student/login}" method="post" id="loginForm" novalidate>
+        <input type="hidden" name="activityId" th:if="${activityId != null}" th:value="${activityId}"/>
+        <div class="form-group">
+          <label for="studentName" th:text="#{student.login.studentName}">姓名</label>
+          <input type="text" id="studentName" name="studentName" class="input-morandi" required
+                 placeholder="请输入真实姓名" maxlength="20"
+                 title="请输入姓名（1-20 个字符）"/>
+          <div class="field-error" id="studentNameError" th:text="#{student.login.error.nameEmpty}">姓名不能为空，且不超过 20 个字符</div>
+        </div>
+        <div class="form-group">
+          <label for="studentId" th:text="#{student.login.studentId}">学号</label>
+          <input type="text" id="studentId" name="studentId" class="input-morandi" required
+                 inputmode="text" autocomplete="username"
+                 placeholder="请输入学号" pattern="^[a-zA-Z0-9]{4,20}$"
+                 title="4-20 位字母或数字"/>
+          <div class="field-error" id="studentIdError" th:text="#{student.login.error.studentIdInvalid}">学号应为 4-20 位字母或数字</div>
+        </div>
+        <div class="form-group">
+          <label for="idCard" th:text="#{student.login.idCard}">身份证号</label>
+          <input type="text" id="idCard" name="idCard" class="input-morandi" required
+                 inputmode="numeric" autocomplete="off"
+                 placeholder="请输入 18 位身份证号" maxlength="18"/>
+          <div class="field-error" id="idCardError" th:text="#{student.login.error.idCardInvalid}">身份证号应为 18 位且校验位正确</div>
+        </div>
+        <button type="submit" class="btn-spring" th:text="#{student.login.btn.login}">进入填表</button>
+      </form>
+
+      <a th:href="@{/}" class="link-morandi back-portal">&#8592; 返回选择入口</a>
+    </div>
+  </div>
+
+  <th:block th:replace="~{common/layout :: scripts}"/>
+  <script>
+    (function () {
+      var form = document.getElementById('loginForm');
+      var studentName = document.getElementById('studentName');
+      var studentId = document.getElementById('studentId');
+      var idCard = document.getElementById('idCard');
+      var studentNameError = document.getElementById('studentNameError');
+      var studentIdError = document.getElementById('studentIdError');
+      var idCardError = document.getElementById('idCardError');
+
+      // GB 11643-1999 校验码表
+      var checkCodes = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'];
+      var weights = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
+
+      function validateStudentName() {
+        var val = studentName.value.trim();
+        var ok = val.length >= 1 && val.length <= 20;
+        studentNameError.classList.toggle('show', !ok);
+        return ok;
+      }
+
+      function validateStudentId() {
+        var ok = /^[a-zA-Z0-9]{4,20}$/.test(studentId.value.trim());
+        studentIdError.classList.toggle('show', !ok);
+        return ok;
+      }
+
+      function validateIdCard() {
+        var val = idCard.value.trim().toUpperCase();
+        if (!/^\d{17}[\dX]$/.test(val)) {
+          idCardError.classList.add('show');
+          return false;
+        }
+        var sum = 0;
+        for (var i = 0; i < 17; i++) {
+          sum += parseInt(val.charAt(i), 10) * weights[i];
+        }
+        var expected = checkCodes[sum % 11];
+        var ok = expected === val.charAt(17);
+        idCardError.classList.toggle('show', !ok);
+        return ok;
+      }
+
+      studentName.addEventListener('blur', validateStudentName);
+      studentId.addEventListener('blur', validateStudentId);
+      idCard.addEventListener('blur', validateIdCard);
+      idCard.addEventListener('input', function () {
+        idCard.value = idCard.value.toUpperCase();
+      });
+
+      form.addEventListener('submit', function (e) {
+        var ok0 = validateStudentName();
+        var ok1 = validateStudentId();
+        var ok2 = validateIdCard();
+        if (!ok0 || !ok1 || !ok2) {
+          e.preventDefault();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

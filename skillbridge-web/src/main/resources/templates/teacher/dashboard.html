@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title th:text="#{teacher.dashboard.title} + ' - SkillBridge'">仪表盘 - SkillBridge</title>
+  <th:block th:replace="~{common/layout :: styles}"/>
+  <style>
+    .todo-section {
+      margin-top: 24px;
+      padding: 16px 18px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+    }
+    .todo-section .todo-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--morandi-text-primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .todo-list { list-style: none; padding: 0; margin: 0; }
+    .todo-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-size: 13px;
+      color: var(--morandi-text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .todo-list li:last-child { border-bottom: none; }
+    .todo-list .todo-tag {
+      display: inline-block;
+      padding: 1px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .todo-tag--urgent { background: rgba(230,126,34,0.20); color: #ffb74d; }
+    .todo-tag--info { background: rgba(33,150,243,0.18); color: #64b5f6; }
+    .todo-empty {
+      padding: 12px 0;
+      font-size: 13px;
+      color: var(--morandi-text-muted);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-link" th:text="#{a11y.skipToMain}">跳到主要内容</a>
+  <th:block th:replace="~{common/layout :: bg-cursor}"/>
+
+  <div class="page-wrap">
+    <div class="page-card glass-card" id="main-content">
+      <th:block th:replace="~{common/layout :: teacher-nav(active='dashboard', title=#{teacher.dashboard.title})}"/>
+
+      <div th:if="${msg}" class="msg-morandi msg-morandi--success" th:text="${msg}" style="margin-bottom:16px;"></div>
+      <div th:if="${error}" class="msg-morandi msg-morandi--error" th:text="${error}" style="margin-bottom:16px;"></div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label" th:text="#{teacher.dashboard.totalActivities}">活动总数</div>
+          <div class="stat-value" th:text="${totalActivities}">0</div>
+          <div class="stat-delta" th:classappend="${todayNewActivities == 0 ? 'zero' : ''}">
+            <span th:text="#{teacher.dashboard.todayNew}">今日新增</span> <span th:text="${todayNewActivities}">0</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label" th:text="#{status.active}">报名中</div>
+          <div class="stat-value" th:text="${activeActivities}">0</div>
+          <div class="stat-delta zero" th:text="#{teacher.dashboard.activeHint}">进行中的活动</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label" th:text="#{status.closed}">已截止</div>
+          <div class="stat-value" th:text="${closedActivities}">0</div>
+          <div class="stat-delta zero" th:text="#{teacher.dashboard.closedHint}">已结束的活动</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label" th:text="#{teacher.dashboard.totalSubmissions}">提交总数</div>
+          <div class="stat-value" th:text="${totalSubmissions}">0</div>
+          <div class="stat-delta" th:classappend="${todayNewSubmissions == 0 ? 'zero' : ''}">
+            <span th:text="#{teacher.dashboard.todayNew}">今日新增</span> <span th:text="${todayNewSubmissions}">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 待办事项 -->
+      <div class="todo-section" th:if="${todoItems != null and not #lists.isEmpty(todoItems)}">
+        <div class="todo-title">📋 <span th:text="#{teacher.dashboard.todoTitle}">待办事项</span></div>
+        <ul class="todo-list">
+          <li th:each="item : ${todoItems}">
+            <span class="todo-tag"
+                  th:classappend="${item.urgent ? 'todo-tag--urgent' : 'todo-tag--info'}"
+                  th:text="${item.urgent ? #{teacher.dashboard.todoUrgent} : #{teacher.dashboard.todoInfo}}">紧急</span>
+            <a th:if="${item.link != null}" th:href="${item.link}" class="link-morandi" th:text="${item.text}">待办内容</a>
+            <span th:unless="${item.link != null}" th:text="${item.text}">待办内容</span>
+          </li>
+        </ul>
+      </div>
+      <div class="todo-section" th:if="${todoItems == null or #lists.isEmpty(todoItems)}">
+        <div class="todo-title">📋 <span th:text="#{teacher.dashboard.todoTitle}">待办事项</span></div>
+        <div class="todo-empty" th:text="#{teacher.dashboard.todoEmpty}">暂无待办事项，一切就绪 ✓</div>
+      </div>
+
+      <div class="section-title" th:text="#{teacher.dashboard.quickActions}">快捷操作</div>
+      <div class="quick-actions">
+        <a th:href="@{/teacher/create}" th:text="#{teacher.dashboard.quickCreate}">创建新活动</a>
+        <a th:href="@{/teacher/activities}" th:text="#{teacher.dashboard.quickList}">查看活动列表</a>
+        <a th:href="@{/teacher/templates}" th:text="#{teacher.dashboard.quickTemplates}">模板库管理</a>
+        <a th:href="@{/teacher/export-tasks}" th:text="#{teacher.dashboard.quickExports}">查看导出任务</a>
+        <a th:href="@{/teacher/audit-logs}" th:text="#{teacher.dashboard.quickAudit}">查看审计日志</a>
+        <a th:href="@{/teacher/accounts}" th:text="#{teacher.dashboard.quickAccounts}">管理教师账号</a>
+      </div>
+    </div>
+  </div>
+
+  <th:block th:replace="~{common/layout :: scripts}"/>
+</body>
+</html>

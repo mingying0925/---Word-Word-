@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title th:text="#{teacher.templates.preview.title} + ' - SkillBridge'">模板字段预览 - SkillBridge</title>
+  <th:block th:replace="~{common/layout :: styles}"/>
+  <style>
+    .preview-wrap {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 32px 24px 100px;
+    }
+    .preview-card {
+      width: 100%;
+      max-width: 1060px;
+      padding: 36px 40px 28px;
+    }
+    .preview-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .preview-top h1 {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--morandi-text-primary);
+      letter-spacing: 0.3px;
+    }
+    .preview-banner {
+      background: rgba(200,180,160,0.15);
+      border: 1px solid rgba(200,180,160,0.30);
+      border-radius: var(--radius-sm);
+      padding: 12px 18px;
+      margin-bottom: 24px;
+      font-size: 13px;
+      color: #8A7A6A;
+    }
+    .meta-row {
+      display: flex;
+      gap: 28px;
+      background: rgba(255,255,255,0.20);
+      border: 1px solid var(--morandi-border);
+      border-radius: var(--radius-sm);
+      padding: 12px 18px;
+      margin-bottom: 24px;
+      font-size: 13px;
+      color: var(--morandi-text-secondary);
+    }
+    .meta-row strong {
+      color: var(--morandi-text-primary);
+      font-weight: 500;
+    }
+    .form-section {
+      background: rgba(255,255,255,0.16);
+      border: 1px solid var(--morandi-border);
+      border-radius: var(--radius-md);
+      padding: 24px 28px 28px;
+      margin-bottom: 22px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--morandi-text-primary);
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.30);
+    }
+    .section-header::before {
+      content: '';
+      width: 3px;
+      height: 16px;
+      background: var(--morandi-primary);
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .bm-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .bm-table th {
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--morandi-text-muted);
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.25);
+    }
+    .bm-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+      font-size: 13px;
+      color: var(--morandi-text-secondary);
+      vertical-align: middle;
+    }
+    .bm-table tr:last-child td { border-bottom: none; }
+    .type-tag {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 500;
+      background: rgba(139,164,184,0.15);
+      color: var(--morandi-primary);
+    }
+    .form-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .form-table td {
+      padding: 10px 12px;
+      vertical-align: middle;
+      border: 1px solid rgba(0,0,0,0.05);
+      background: rgba(255,255,255,0.08);
+      font-size: 13px;
+      color: var(--morandi-text-secondary);
+    }
+    .form-table td.label-cell {
+      background: rgba(139,164,184,0.05);
+      font-weight: 500;
+      color: var(--morandi-text-primary);
+      text-align: center;
+      white-space: nowrap;
+    }
+    .form-table td.bookmark-cell {
+      background: rgba(255,255,255,0.15);
+    }
+    .table-scroll {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .action-bar {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.20);
+    }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-link" th:text="#{a11y.skipToMain}">跳到主要内容</a>
+  <th:block th:replace="~{common/layout :: bg-cursor}"/>
+
+  <div class="preview-wrap">
+    <div class="preview-card glass-card" id="main-content">
+
+      <div class="preview-top">
+        <h1 th:text="#{teacher.templates.preview.title}">模板字段预览</h1>
+        <a th:href="@{/teacher/templates}" class="link-morandi" th:text="#{teacher.templates.preview.back} + ' ←'">← 返回模板库</a>
+      </div>
+
+      <div class="preview-banner">
+        <span th:text="#{teacher.templates.preview.title}">模板字段预览</span>：
+        <strong th:text="${template != null ? template.name : ''}">模板名称</strong>
+      </div>
+
+      <div class="meta-row">
+        <span><strong th:text="#{teacher.templates.column.name} + '：'">模板名称：</strong><span th:text="${template != null ? template.name : '—'}">—</span></span>
+        <span><strong th:text="#{teacher.templates.column.fields} + '：'">字段数：</strong><span th:text="${#lists.size(bookmarks)}">0</span></span>
+        <span th:if="${template != null and template.createdAt != null}">
+          <strong th:text="#{teacher.templates.column.createdAt} + '：'">创建时间：</strong>
+          <span th:text="${#temporals.format(template.createdAt, 'yyyy-MM-dd HH:mm')}">—</span>
+        </span>
+      </div>
+
+      <!-- ===== 字段列表（只读） ===== -->
+      <div class="form-section">
+        <div class="section-header" th:text="#{teacher.confirmFields.title}">确认字段</div>
+        <div th:if="${#lists.isEmpty(bookmarks)}" class="msg-morandi msg-morandi--error" th:text="#{teacher.templates.preview.empty}">
+          该模板未解析到任何字段
+        </div>
+        <div class="table-scroll" th:if="${not #lists.isEmpty(bookmarks)}">
+          <table class="bm-table">
+            <thead>
+              <tr>
+                <th th:text="#{teacher.confirmFields.column.index}">序号</th>
+                <th th:text="#{teacher.confirmFields.column.bookmark}">书签名称</th>
+                <th th:text="#{teacher.confirmFields.column.display}">显示名</th>
+                <th th:text="#{teacher.confirmFields.column.type}">控件类型</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="bm, iter : ${bookmarks}">
+                <td th:text="${iter.count}">1</td>
+                <td th:text="${bm['name']}">书签名</td>
+                <td th:text="${bm['displayName'] != null ? bm['displayName'] : bm['name']}">显示名</td>
+                <td><span class="type-tag" th:text="${bm['type'] != null ? bm['type'] : 'text'}">text</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== 表格结构预览（只读） ===== -->
+      <div class="form-section" th:if="${not #lists.isEmpty(tablesStructure)}">
+        <div class="section-header">表格结构预览</div>
+        <div th:each="table : ${tablesStructure}">
+          <h3 th:if="${#lists.size(tablesStructure) > 1}"
+              style="font-size:14px;font-weight:500;color:var(--morandi-text-secondary);margin-bottom:10px;">
+            表格 <span th:text="${table.tableIndex}"></span>
+          </h3>
+          <div class="table-scroll">
+            <table class="form-table">
+              <tbody>
+                <tr th:each="row : ${table.rows}">
+                  <td th:each="cell : ${row}"
+                      th:attr="rowspan=${cell.rowspan > 1 ? cell.rowspan : null},
+                               colspan=${cell.colspan > 1 ? cell.colspan : null}"
+                      th:classappend="${cell.isBookmark ? 'bookmark-cell' : 'label-cell'}">
+                    <span th:if="${cell.isBookmark}" style="font-size:12px;color:var(--morandi-primary);">
+                      <th:block th:each="bn, i : ${cell.bookmarkNames}">
+                        <span th:text="${bn}">书签</span><span th:if="${!i.last}">、</span>
+                      </th:block>
+                      <span style="color:var(--morandi-text-muted);">（<span th:text="${cell.type}">text</span>）</span>
+                    </span>
+                    <span th:if="${not cell.isBookmark}" th:text="${cell.text}" style="font-size:13px;">单元格文本</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-bar">
+        <a th:href="@{/teacher/templates}" class="btn-spring" th:text="#{teacher.templates.preview.back}">返回模板库</a>
+      </div>
+
+    </div>
+  </div>
+
+  <th:block th:replace="~{common/layout :: scripts}"/>
+</body>
+</html>

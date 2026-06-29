@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title th:text="#{teacher.activityList.title} + ' - SkillBridge'">活动列表 - SkillBridge</title>
+  <th:block th:replace="~{common/layout :: styles}"/>
+</head>
+<body>
+  <a href="#main-content" class="skip-link" th:text="#{a11y.skipToMain}">跳到主要内容</a>
+  <th:block th:replace="~{common/layout :: bg-cursor}"/>
+
+  <div class="page-wrap">
+    <div class="page-card glass-card" id="main-content">
+      <th:block th:replace="~{common/layout :: teacher-nav(active='activities', title=#{teacher.activityList.title})}"/>
+
+      <div th:if="${msg}" class="msg-morandi msg-morandi--success" th:text="${msg}" style="margin-bottom:16px;"></div>
+      <div th:if="${error}" class="msg-morandi msg-morandi--error" th:text="${error}" style="margin-bottom:16px;"></div>
+
+      <!-- 统计概览 -->
+      <div style="display:flex; gap:16px; margin-bottom:16px; font-size:13px; color:var(--morandi-text-secondary); padding:10px 16px; background:rgba(255,255,255,0.12); border-radius:8px;">
+        <span><span th:text="#{teacher.activityList.totalCountPrefix}">共</span> <strong th:text="${totalCount != null ? totalCount : 0}" style="color:var(--morandi-text-primary);">0</strong> <span th:text="#{teacher.activityList.totalCountSuffix}">个活动</span></span>
+        <span th:if="${urgentIds != null and urgentIds.size() > 0}" style="color:#e67e22;">
+          ⚠ <strong th:text="${urgentIds.size()}">0</strong> <span th:text="#{teacher.activityList.urgentCount}">个活动即将截止</span>
+        </span>
+      </div>
+
+      <!-- 搜索筛选表单 -->
+      <form class="search-bar" method="get" th:action="@{/teacher/activities}">
+        <input type="text" name="keyword" th:placeholder="#{teacher.activityList.searchPlaceholder}"
+               th:value="${keyword}" aria-label="keyword"/>
+        <select name="status" aria-label="status">
+          <option value="" th:text="#{teacher.activityList.allStatuses}">全部状态</option>
+          <option value="0" th:selected="${status != null and status == 0}" th:text="#{status.active}">报名中</option>
+          <option value="1" th:selected="${status != null and status == 1}" th:text="#{status.closed}">已截止</option>
+          <option value="2" th:selected="${status != null and status == 2}" th:text="#{status.draft}">草稿</option>
+        </select>
+        <button type="submit" class="btn-search" th:text="#{btn.search}">搜索</button>
+        <a th:href="@{/teacher/activities}" class="btn-reset" th:text="#{btn.reset}">重置</a>
+      </form>
+
+      <div th:if="${#lists.isEmpty(activities)}">
+        <div class="empty-state" th:text="#{teacher.activityList.empty}">暂无活动，请点击上方按钮创建。</div>
+      </div>
+
+      <div class="table-wrap" th:if="${not #lists.isEmpty(activities)}">
+        <table class="data-table">
+          <thead>
+          <tr>
+            <th th:text="#{teacher.activityList.column.id}">ID</th>
+            <th th:text="#{teacher.activityList.column.name}">活动名称</th>
+            <th th:text="#{teacher.activityList.column.submissionsRoster}">提交/名单</th>
+            <th th:text="#{teacher.activityList.column.deadline}">截止时间</th>
+            <th th:text="#{teacher.activityList.column.status}">状态</th>
+            <th th:text="#{teacher.activityList.column.createdAt}">创建时间</th>
+            <th th:text="#{teacher.activityList.column.actions}">操作</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="a : ${activities}"
+              th:classappend="${urgentIds != null and urgentIds.contains(a.id) ? 'urgent-row' : ''}">
+            <td th:text="${a.id}">1</td>
+            <td>
+              <span th:text="${a.name}">活动名称</span>
+              <span th:if="${urgentIds != null and urgentIds.contains(a.id)}" class="urgent-badge" th:text="#{teacher.activityList.urgentBadge}">即将截止</span>
+            </td>
+            <td style="font-size:12px;">
+              <span th:text="${submissionCounts != null and submissionCounts.containsKey(a.id) ? submissionCounts.get(a.id) : 0}">0</span>
+              <span style="color:var(--morandi-text-muted);"> / </span>
+              <span th:text="${rosterCounts != null and rosterCounts.containsKey(a.id) and rosterCounts.get(a.id) > 0 ? rosterCounts.get(a.id) : '—'}" style="color:var(--morandi-text-muted);">—</span>
+            </td>
+            <td th:text="${a.deadline != null ? #temporals.format(a.deadline, 'yyyy-MM-dd HH:mm') : '—'}">—</td>
+            <td>
+              <span th:if="${a.status == 0}" class="status-active" th:text="#{status.active}">报名中</span>
+              <span th:if="${a.status == 1}" class="status-closed" th:text="#{status.closed}">已截止</span>
+            </td>
+            <td th:text="${a.createdAt != null ? #temporals.format(a.createdAt, 'yyyy-MM-dd HH:mm') : '—'}">—</td>
+            <td>
+              <a th:href="@{/teacher/activity/{id}/submissions(id=${a.id})}" class="link-morandi" th:text="#{teacher.activityList.action.viewSubmissions}">查看提交</a>
+              <span class="action-sep">|</span>
+              <a th:href="@{/teacher/activity/{id}/roster(id=${a.id})}" class="link-morandi" th:text="#{teacher.activityList.action.roster}">学生名单</a>
+              <span class="action-sep">|</span>
+              <a th:href="@{/teacher/activity/{id}/preview(id=${a.id})}" class="link-morandi" th:text="#{teacher.activityList.action.preview}">预览表单</a>
+              <span class="action-sep">|</span>
+              <a th:href="@{/student/login(activityId=${a.id})}" class="link-morandi" th:text="#{teacher.activityList.action.studentEntry}">学生入口</a>
+              <span class="action-sep">|</span>
+              <a href="javascript:void(0)" class="link-morandi save-to-template-link"
+                 th:data-activity-id="${a.id}"
+                 th:data-activity-name="${a.name}" th:text="#{teacher.activityList.action.saveAsTemplate}">存为模板</a>
+              <span class="action-sep" th:if="${a.status == 0}">|</span>
+              <form th:if="${a.status == 0}" class="action-form" method="post"
+                    th:action="@{/teacher/activity/{id}/close(id=${a.id})}"
+                    th:data-confirm="#{confirm.closeActivity.message}"
+                    th:data-confirm-title="#{confirm.closeActivity.title}"
+                    th:data-confirm-ok="#{btn.close}">
+                <input type="hidden" name="_csrf" th:value="${session.csrfToken}"/>
+                <button type="submit" class="btn-close" th:text="#{teacher.activityList.action.close}">截止</button>
+              </form>
+              <span class="action-sep">|</span>
+              <form class="action-form" method="post"
+                    th:action="@{/teacher/activity/{id}/delete(id=${a.id})}"
+                    th:data-confirm="#{confirm.deleteActivity.message}"
+                    th:data-confirm-title="#{confirm.deleteActivity.title}"
+                    data-confirm-danger>
+                <input type="hidden" name="_csrf" th:value="${session.csrfToken}"/>
+                <button type="submit" class="btn-delete" th:text="#{teacher.activityList.action.delete}">删除</button>
+              </form>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination" th:if="${totalPages > 1}">
+        <a th:if="${hasPrevious}"
+           th:href="@{/teacher/activities(page=${currentPage - 1}, keyword=${keyword}, status=${status})}"
+           th:text="#{action.previousPage}">上一页</a>
+        <span><span th:text="#{action.page}">第</span> <span th:text="${currentPage + 1}"></span> / <span th:text="${totalPages}"></span> <span th:text="#{action.pages}">页</span></span>
+        <a th:if="${hasNext}"
+           th:href="@{/teacher/activities(page=${currentPage + 1}, keyword=${keyword}, status=${status})}"
+           th:text="#{action.nextPage}">下一页</a>
+      </div>
+    </div>
+  </div>
+
+  <th:block th:replace="~{common/layout :: scripts}"/>
+  <script th:inline="javascript">
+    (function () {
+      var csrfInput = document.querySelector('input[name="_csrf"]');
+      var tokenValue = csrfInput ? csrfInput.value : null;
+      var i18nPrompt = /*[[#{confirm.saveAsTemplate.prompt}]]*/ '请输入模板名称：';
+      var i18nEmpty = /*[[#{confirm.saveAsTemplate.empty}]]*/ '模板名称不能为空';
+
+      document.querySelectorAll('.save-to-template-link').forEach(function (link) {
+        link.addEventListener('click', function () {
+          var activityId = this.getAttribute('data-activity-id');
+          var activityName = this.getAttribute('data-activity-name');
+          var name = window.prompt(i18nPrompt, activityName);
+          if (name === null) { return; }
+          name = name.trim();
+          if (!name) {
+            if (typeof showToast === 'function') {
+              showToast(i18nEmpty, 'error');
+            } else {
+              alert(i18nEmpty);
+            }
+            return;
+          }
+          var form = document.createElement('form');
+          form.method = 'POST';
+          form.action = '/teacher/templates/save-from-activity';
+          form.style.display = 'none';
+          form.appendChild(createInput('activityId', activityId));
+          form.appendChild(createInput('name', name));
+          if (tokenValue) { form.appendChild(createInput('_csrf', tokenValue)); }
+          document.body.appendChild(form);
+          form.submit();
+        });
+      });
+
+      function createInput(name, value) {
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = value;
+        return input;
+      }
+    })();
+  </script>
+</body>
+</html>

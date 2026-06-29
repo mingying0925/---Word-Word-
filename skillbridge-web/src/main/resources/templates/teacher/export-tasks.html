@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title th:text="#{teacher.nav.exportTasks} + ' - SkillBridge'">导出任务 - SkillBridge</title>
+  <th:block th:replace="~{common/layout :: styles}"/>
+  <style>
+    .auto-refresh-hint {
+      font-size: 12px;
+      color: var(--morandi-text-muted);
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-link" th:text="#{a11y.skipToMain}">跳到主要内容</a>
+  <th:block th:replace="~{common/layout :: bg-cursor}"/>
+
+  <div class="page-wrap">
+    <div class="page-card glass-card" id="main-content">
+      <th:block th:replace="~{common/layout :: teacher-nav(active='export-tasks', title=#{teacher.nav.exportTasks})}"/>
+
+      <div th:if="${msg}" class="msg-morandi msg-morandi--success" th:text="${msg}" style="margin-bottom:16px;"></div>
+      <div th:if="${error}" class="msg-morandi msg-morandi--error" th:text="${error}" style="margin-bottom:16px;"></div>
+
+      <div class="auto-refresh-hint" th:if="${not #lists.isEmpty(tasks)}" th:text="#{teacher.exportTasks.autoRefreshHint}">
+        提示：有进行中的任务时，页面将每 5 秒自动刷新。
+      </div>
+
+      <div th:if="${#lists.isEmpty(tasks)}">
+        <div class="empty-state" th:text="#{teacher.exportTasks.empty}">暂无导出任务。</div>
+      </div>
+
+      <div class="table-wrap" th:if="${not #lists.isEmpty(tasks)}">
+        <table class="data-table">
+          <thead>
+          <tr>
+            <th th:text="#{teacher.exportTasks.column.id}">ID</th>
+            <th th:text="#{teacher.exportTasks.column.type}">类型</th>
+            <th th:text="#{teacher.exportTasks.column.activity}">活动名称</th>
+            <th th:text="#{teacher.exportTasks.column.status}">状态</th>
+            <th th:text="#{teacher.exportTasks.column.createdAt}">创建时间</th>
+            <th th:text="#{teacher.exportTasks.column.completedAt}">完成时间</th>
+            <th th:text="#{teacher.exportTasks.column.actions}">操作</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="t : ${tasks}">
+            <td th:text="${t.id}">1</td>
+            <td th:text="${t.type}">ZIP</td>
+            <td th:text="${t.activityName}">活动名称</td>
+            <td>
+              <span class="status-tag"
+                    th:classappend="${t.status == 'PENDING' ? 'pending' :
+                      t.status == 'RUNNING' ? 'running' :
+                      t.status == 'SUCCESS' ? 'success' : 'failed'}"
+                    th:text="${t.status == 'PENDING' ? #{teacher.exportTasks.status.pending} :
+                      t.status == 'RUNNING' ? #{teacher.exportTasks.status.running} :
+                      t.status == 'SUCCESS' ? #{teacher.exportTasks.status.success} : #{teacher.exportTasks.status.failed}}">状态</span>
+            </td>
+            <td th:text="${t.createdAt != null ? #temporals.format(t.createdAt, 'yyyy-MM-dd HH:mm:ss') : '—'}">—</td>
+            <td th:text="${t.completedAt != null ? #temporals.format(t.completedAt, 'yyyy-MM-dd HH:mm:ss') : '—'}">—</td>
+            <td>
+              <a th:if="${t.status == 'SUCCESS'}"
+                 th:href="@{/teacher/export-tasks/{id}/download(id=${t.id})}"
+                 class="btn-download" th:text="#{teacher.exportTasks.action.download}">下载</a>
+              <form th:if="${t.status == 'FAILED'}" method="post"
+                    th:action="@{/teacher/export-tasks/{id}/retry(id=${t.id})}"
+                    style="display:inline;">
+                <input type="hidden" name="_csrf" th:value="${session.csrfToken}"/>
+                <button type="submit" class="btn-spring" style="min-width:auto;padding:4px 12px;font-size:12px;" th:text="#{teacher.exportTasks.action.retry}">重试</button>
+              </form>
+              <span th:if="${t.status != 'SUCCESS' and t.status != 'FAILED'}" style="color: var(--morandi-text-muted); font-size: 12px;">—</span>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script th:if="${not #lists.isEmpty(tasks)}">
+    (function () {
+      var hasRunning = document.querySelectorAll('.status-tag.running, .status-tag.pending').length > 0;
+      if (hasRunning) {
+        setTimeout(function () { location.reload(); }, 5000);
+      }
+    })();
+  </script>
+
+  <th:block th:replace="~{common/layout :: scripts}"/>
+</body>
+</html>

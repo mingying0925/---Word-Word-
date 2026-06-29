@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>报名活动列表 - SkillBridge</title>
+  <th:block th:replace="~{common/layout :: styles}"/>
+  <style>
+    .list-wrap {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 32px 24px 100px;
+    }
+    .list-card {
+      width: 100%;
+      max-width: 800px;
+      padding: 36px 40px 28px;
+    }
+    .list-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .list-top h1 {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--morandi-text-primary);
+      letter-spacing: 0.3px;
+    }
+    .list-top .role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--morandi-secondary);
+      background: rgba(201, 169, 160, 0.18);
+      border-radius: 20px;
+    }
+    .activity-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px;
+      border: 1px solid var(--morandi-border);
+      border-radius: var(--radius-sm);
+      margin-bottom: 12px;
+      transition: background 0.25s var(--spring-smooth);
+    }
+    .activity-item:hover {
+      background: rgba(255,255,255,0.08);
+    }
+    .activity-item .info {
+      flex: 1;
+    }
+    .activity-item .info h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--morandi-text-primary);
+      margin-bottom: 4px;
+    }
+    .activity-item .info .meta {
+      font-size: 12px;
+      color: var(--morandi-text-muted);
+    }
+    .activity-item .info .meta span {
+      margin-right: 16px;
+    }
+    .status-active {
+      color: #5A7A6A;
+      font-weight: 500;
+      font-size: 13px;
+    }
+    .status-closed {
+      color: #8A5A5A;
+      font-weight: 500;
+      font-size: 13px;
+    }
+    .btn-enter {
+      padding: 8px 22px;
+      font-size: 13px;
+      background: var(--morandi-secondary);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.20);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.25s var(--spring-smooth),
+                  transform 0.30s var(--spring-bounce);
+    }
+    .btn-enter:hover {
+      background: var(--morandi-secondary-hover);
+      transform: scale(1.03);
+    }
+    .btn-enter.disabled {
+      background: var(--morandi-text-muted);
+      cursor: not-allowed;
+      pointer-events: none;
+      opacity: 0.5;
+    }
+    .empty {
+      padding: 48px 24px;
+      text-align: center;
+      color: var(--morandi-text-muted);
+      font-size: 14px;
+    }
+    .back-portal {
+      display: block;
+      text-align: center;
+      margin-top: 24px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <th:block th:replace="~{common/layout :: bg-cursor}"/>
+
+  <div class="list-wrap">
+    <div class="list-card glass-card">
+      <div class="list-top">
+        <div>
+          <span class="role-badge">&#9994; 学生端</span>
+          <h1 style="margin-top:8px;">报名活动列表</h1>
+        </div>
+        <a th:href="@{/logout}" class="link-morandi">退出</a>
+      </div>
+
+      <div th:if="${msg}" class="msg-morandi msg-morandi--success" th:text="${msg}" style="margin-bottom:16px;"></div>
+      <div th:if="${error}" class="msg-morandi msg-morandi--error" th:text="${error}" style="margin-bottom:16px;"></div>
+
+      <div th:if="${#lists.isEmpty(activities)}">
+        <div class="empty">暂无报名活动，请联系您的教师。</div>
+      </div>
+
+      <div th:if="${not #lists.isEmpty(activities)}">
+        <div th:each="a : ${activities}" class="activity-item">
+          <div class="info">
+            <h3 th:text="${a.name}">活动名称</h3>
+            <div class="meta">
+              <span th:if="${a.status == 0}" class="status-active">报名中</span>
+              <span th:if="${a.status == 1}" class="status-closed">已截止</span>
+              <span th:if="${a.deadline != null}">
+                截止：<span th:text="${#temporals.format(a.deadline, 'yyyy-MM-dd HH:mm')}">—</span>
+              </span>
+            </div>
+          </div>
+          <a th:href="@{/student/login(activityId=${a.id})}"
+             th:classappend="${a.status == 1} ? 'disabled' : ''"
+             class="btn-enter">进入填表</a>
+        </div>
+      </div>
+
+      <a th:href="@{/}" class="link-morandi back-portal">&#8592; 返回选择入口</a>
+    </div>
+  </div>
+
+  <th:block th:replace="~{common/layout :: scripts}"/>
+</body>
+</html>

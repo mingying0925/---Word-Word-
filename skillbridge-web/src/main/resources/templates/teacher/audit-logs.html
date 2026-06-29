@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title th:text="#{teacher.nav.auditLogs} + ' - SkillBridge'">审计日志 - SkillBridge</title>
+  <th:block th:replace="~{common/layout :: styles}"/>
+  <style>
+    .detail-cell { max-width: 280px; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-link" th:text="#{a11y.skipToMain}">跳到主要内容</a>
+  <th:block th:replace="~{common/layout :: bg-cursor}"/>
+
+  <div class="page-wrap">
+    <div class="page-card page-card--wide glass-card" id="main-content">
+      <th:block th:replace="~{common/layout :: teacher-nav(active='audit-logs', title=#{teacher.nav.auditLogs})}"/>
+
+      <div th:if="${#lists.isEmpty(logs)}">
+        <div class="empty-state" th:text="#{teacher.auditLogs.empty}">暂无审计日志记录。</div>
+      </div>
+
+      <div class="table-wrap" th:if="${not #lists.isEmpty(logs)}">
+        <table class="data-table">
+          <thead>
+          <tr>
+            <th th:text="#{teacher.auditLogs.column.time}">时间</th>
+            <th th:text="#{teacher.auditLogs.column.operator}">操作人</th>
+            <th th:text="#{teacher.auditLogs.column.action}">操作类型</th>
+            <th th:text="#{teacher.auditLogs.column.targetType}">对象类型</th>
+            <th th:text="#{teacher.auditLogs.column.targetId}">对象 ID</th>
+            <th th:text="#{teacher.auditLogs.column.detail}">详情</th>
+            <th th:text="#{teacher.auditLogs.column.ip}">IP</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="log : ${logs}">
+            <td th:text="${log.createdAt != null ? #temporals.format(log.createdAt, 'yyyy-MM-dd HH:mm:ss') : '—'}">—</td>
+            <td th:text="${log.operator}">admin</td>
+            <td>
+              <span class="status-tag"
+                    th:classappend="${log.action == 'LOGIN' ? 'login' :
+                      log.action == 'LOGIN_FAILED' ? 'login-failed' :
+                      log.action == 'CREATE_ACTIVITY' ? 'create' :
+                      log.action == 'DELETE_ACTIVITY' ? 'delete' :
+                      log.action == 'CLOSE_ACTIVITY' ? 'close' :
+                      log.action.startsWith('EXPORT') ? 'export' :
+                      log.action.startsWith('ACCOUNT') ? 'account' : 'default'}"
+                    th:text="${log.action}">LOGIN</span>
+            </td>
+            <td th:text="${log.targetType != null ? log.targetType : '—'}">—</td>
+            <td th:text="${log.targetId != null ? log.targetId : '—'}">—</td>
+            <td class="detail-cell" th:text="${log.detail != null ? log.detail : '—'}">—</td>
+            <td th:text="${log.ip != null ? log.ip : '—'}">—</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination" th:if="${totalPages > 1}">
+        <a th:if="${hasPrevious}" th:href="@{/teacher/audit-logs(page=${currentPage - 1})}" th:text="#{action.previousPage}">上一页</a>
+        <span><span th:text="#{action.page}">第</span> <span th:text="${currentPage + 1}"></span> / <span th:text="${totalPages}"></span> <span th:text="#{action.pages}">页</span></span>
+        <a th:if="${hasNext}" th:href="@{/teacher/audit-logs(page=${currentPage + 1})}" th:text="#{action.nextPage}">下一页</a>
+      </div>
+    </div>
+  </div>
+
+  <th:block th:replace="~{common/layout :: scripts}"/>
+</body>
+</html>

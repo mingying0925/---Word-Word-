@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>报名表 - SkillBridge</title>
+  <th:block th:replace="~{common/layout :: styles}"/>
+  <link rel="stylesheet" th:href="@{/css/student-form.css}"/>
+</head>
+<body>
+  <th:block th:replace="~{common/layout :: bg-cursor}"/>
+
+  <div class="form-page-wrap">
+    <div class="form-card glass-card">
+
+      <!-- ===== Top Bar ===== -->
+      <div class="form-top">
+        <h1 th:text="${activity != null ? activity.name : '报名表'}">报名表</h1>
+        <a th:if="${preview}" th:href="@{/teacher/activities}" class="link-morandi">← 返回活动列表</a>
+        <a th:if="${not preview}" th:href="@{/student/login(activityId=${activityId})}" class="link-morandi">← 返回登录</a>
+      </div>
+
+      <!-- ===== Deadline Info ===== -->
+      <div th:if="${not preview and activity != null and activity.deadline != null}" class="deadline-info"
+           style="padding: 10px 16px; margin-bottom: 16px; border-radius: 8px; background: rgba(201,169,160,0.12); font-size: 13px;">
+        <strong>报名截止时间：</strong>
+        <span th:text="${#temporals.format(activity.deadline, 'yyyy-MM-dd HH:mm')}">—</span>
+        <span th:if="${activity.status != null and activity.status == 1}" style="color: #e67e22; font-weight: 600; margin-left: 12px;">⚠ 已截止</span>
+      </div>
+
+      <!-- ===== Preview Banner ===== -->
+      <div th:if="${preview}" class="preview-banner">
+        当前为教师预览模式，表单控件不可提交。学生端将看到与此一致的表格。
+      </div>
+
+      <!-- ===== Student Info ===== -->
+      <div class="student-badge" th:if="${not preview}">
+        <span><strong>学号：</strong><span th:text="${studentId}">—</span></span>
+        <span><strong>身份证号：</strong><span th:text="${idCard}">—</span></span>
+      </div>
+
+      <!-- ===== Error ===== -->
+      <div th:if="${error}" class="msg-morandi msg-morandi--error" th:text="${error}" style="margin-bottom:22px;">错误信息</div>
+
+      <!-- ============================================================ -->
+      <!-- 预览模式                                                      -->
+      <!-- ============================================================ -->
+      <th:block th:if="${preview}">
+        <div class="form-section">
+          <div class="section-header">基本信息</div>
+          <div th:each="table : ${tablesStructure}">
+            <h3 th:if="${#lists.size(tablesStructure) > 1}"
+                style="font-size:14px;font-weight:500;color:var(--morandi-text-secondary);margin-bottom:10px;">
+              表格 <span th:text="${table.tableIndex}"></span>
+            </h3>
+            <div class="table-scroll">
+            <table class="form-table">
+              <tbody>
+                <tr th:each="row : ${table.rows}">
+                  <td th:each="cell : ${row}"
+                      th:attr="rowspan=${cell.rowspan > 1 ? cell.rowspan : null},
+                               colspan=${cell.colspan > 1 ? cell.colspan : null}"
+                      th:classappend="${cell.isBookmark ? 'bookmark-cell' : 'label-cell'}">
+                    <span th:if="${cell.isBookmark}">
+                      <th:block th:if="${#lists.size(cell.bookmarkNames) == 1}">
+                        <span th:if="${cell.type == 'radio'}">
+                          <span th:each="opt : ${cell.options}">
+                            <input type="radio" th:name="${cell.bookmarkNames[0]}" th:value="${opt}" disabled/>
+                            <label th:text="${opt}" style="display:inline;font-size:13px;color:var(--morandi-text-secondary);">选项</label>
+                          </span>
+                        </span>
+                        <span th:if="${cell.type == 'date'}">
+                          <input type="date" th:name="${cell.bookmarkNames[0]}" disabled/>
+                        </span>
+                        <span th:if="${cell.type == 'image'}">
+                          <input type="text" th:name="${cell.bookmarkNames[0]}" disabled placeholder="照片占位"/>
+                        </span>
+                        <span th:if="${cell.type == 'text'}">
+                          <input type="text" th:name="${cell.bookmarkNames[0]}" disabled/>
+                        </span>
+                      </th:block>
+                      <th:block th:if="${#lists.size(cell.bookmarkNames) > 1}">
+                        <div class="multi-field">
+                          <div th:each="bmName,iter : ${cell.bookmarkNames}" class="field-row">
+                            <label th:text="${cell.bookmarkDisplayNames != null and #lists.size(cell.bookmarkDisplayNames) > iter.index ? cell.bookmarkDisplayNames[iter.index] : bmName}"></label>
+                            <input type="text" th:name="${bmName}" disabled/>
+                          </div>
+                        </div>
+                      </th:block>
+                    </span>
+                    <span th:if="${not cell.isBookmark}" th:text="${cell.text}" style="font-size:13px;">单元格文本</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- 工作经历（预览，只读，仅当模板含 work_ 书签时显示） -->
+          <div class="form-section" th:if="${hasWorkExperience}">
+            <div class="section-header">工作经历</div>
+            <div class="table-scroll">
+              <table class="exp-table">
+                <thead>
+                  <tr>
+                    <th style="width:44px;">#</th>
+                    <th style="min-width:200px;">起止时间</th>
+                    <th>工作单位</th>
+                    <th style="width:140px;">职务</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="exp-row">
+                    <td><span class="exp-index">1</span></td>
+                    <td>
+                      <div class="exp-date-cell">
+                        <input type="date" disabled/>
+                        <span class="exp-dash">-</span>
+                        <input type="date" disabled/>
+                      </div>
+                    </td>
+                    <td><input type="text" disabled placeholder="工作单位"/></td>
+                    <td><input type="text" disabled placeholder="职务"/></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+      </th:block>
+
+      <!-- ============================================================ -->
+      <!-- 学生填表模式                                                  -->
+      <!-- ============================================================ -->
+      <th:block th:if="${not preview}">
+        <!-- 填写进度条（JS 实时统计已填字段比例） -->
+        <div class="progress-bar-wrap" id="progressBarWrap">
+          <div class="progress-info">
+            <span>填写进度</span>
+            <span><span id="progressFilledCount">0</span> / <span id="progressTotalCount">0</span></span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+        </div>
+
+        <!-- 草稿恢复提示（提交失败后保留输入） -->
+        <div class="draft-restored-banner" id="draftRestoredBanner" th:if="${formDraft != null}" data-has-draft="true">
+          <span>已为您恢复上次填写的内容，请检查后继续提交。</span>
+          <button type="button" id="clearDraftBtn">清除恢复的内容</button>
+        </div>
+
+        <div class="msg-morandi msg-morandi--info" th:if="${studentName != null}" style="margin-bottom: 16px;">
+          当前登录学生：<strong th:text="${studentName}"></strong>
+          （学号：<span th:text="${studentId}"></span>）
+        </div>
+
+        <!-- 必填字段图例 -->
+        <div class="form-legend">
+          <span class="required-mark">*</span> 为必填项，未填写将无法提交。系统会每 30 秒自动保存草稿到本地，防止意外丢失。
+        </div>
+
+        <form th:action="@{/student/activity/{id}/submit(id=${activityId})}" method="post" enctype="multipart/form-data">
+          <input type="hidden" name="_csrf" th:value="${session.csrfToken}"/>
+          <input type="hidden" name="studentId" th:value="${studentId}"/>
+
+          <!-- === 动态表格（完全由 Word 模板书签生成） === -->
+          <div class="form-section">
+            <div class="section-header">基本信息</div>
+            <div th:each="table : ${tablesStructure}">
+              <h3 th:if="${#lists.size(tablesStructure) > 1}"
+                  style="font-size:14px;font-weight:500;color:var(--morandi-text-secondary);margin-bottom:10px;">
+                表格 <span th:text="${table.tableIndex}"></span>
+              </h3>
+              <div class="table-scroll">
+              <table class="form-table">
+                <tbody>
+                  <tr th:each="row : ${table.rows}">
+                    <td th:each="cell : ${row}"
+                        th:attr="rowspan=${cell.rowspan > 1 ? cell.rowspan : null},
+                                 colspan=${cell.colspan > 1 ? cell.colspan : null}"
+                        th:classappend="${cell.isBookmark ? 'bookmark-cell' : 'label-cell'}">
+                      <span th:if="${cell.isBookmark}">
+                        <th:block th:if="${#lists.size(cell.bookmarkNames) == 1}">
+                          <span th:if="${cell.type == 'radio'}" class="radio-group">
+                            <span class="required-mark" th:if="${cell.required}">*</span>
+                            <span th:each="opt : ${cell.options}">
+                              <input type="radio" th:name="${cell.bookmarkNames[0]}" th:value="${opt}"
+                                     th:required="${cell.required}" th:disabled="${not cell.enabled}"
+                                     th:checked="${formDraft != null and formDraft.containsKey(cell.bookmarkNames[0]) and formDraft.get(cell.bookmarkNames[0]) == opt}"/>
+                              <label th:text="${opt}">选项</label>
+                            </span>
+                          </span>
+                          <span th:if="${cell.type == 'date'}">
+                            <span class="required-mark" th:if="${cell.required}">*</span>
+                            <input type="date" th:name="${cell.bookmarkNames[0]}"
+                                   th:required="${cell.required}" th:disabled="${not cell.enabled}"
+                                   th:value="${formDraft != null and formDraft.containsKey(cell.bookmarkNames[0]) ? formDraft.get(cell.bookmarkNames[0]) : ''}"/>
+                          </span>
+                          <span th:if="${cell.type == 'image'}">
+                            <div class="photo-area">
+                              <div class="photo-box" th:data-input="${cell.bookmarkNames[0]}"
+                                   th:classappend="${not cell.enabled ? 'photo-box--disabled' : ''}">
+                                <div class="photo-placeholder">
+                                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                                  <span>点击上传证件照</span>
+                                </div>
+                                <img class="photo-preview" alt="证件照预览"/>
+                                <input type="file" th:name="${cell.bookmarkNames[0]}" accept="image/jpeg,image/png,image/gif" data-max-size="2097152"
+                                       th:disabled="${not cell.enabled}"/>
+                              </div>
+                              <div class="photo-hint">
+                                <strong>证件照要求 <span class="required-mark" th:if="${cell.required}">*</span></strong><br/>
+                                支持 JPG / PNG / GIF 格式<br/>
+                                文件大小不超过 2MB<br/>
+                                建议尺寸：295×413 像素（标准证件照）
+                              </div>
+                            </div>
+                          </span>
+                          <span th:if="${cell.type == 'text'}">
+                            <span class="required-mark" th:if="${cell.required}">*</span>
+                            <input type="text" th:name="${cell.bookmarkNames[0]}" class="input-morandi"
+                                   th:required="${cell.required}" th:disabled="${not cell.enabled}"
+                                   th:value="${formDraft != null and formDraft.containsKey(cell.bookmarkNames[0]) ? formDraft.get(cell.bookmarkNames[0]) : ''}"/>
+                          </span>
+                        </th:block>
+                        <th:block th:if="${#lists.size(cell.bookmarkNames) > 1}">
+                          <div class="multi-field">
+                            <div th:each="bmName,iter : ${cell.bookmarkNames}" class="field-row">
+                              <label th:text="${cell.bookmarkDisplayNames != null and #lists.size(cell.bookmarkDisplayNames) > iter.index ? cell.bookmarkDisplayNames[iter.index] : bmName}"></label>
+                              <span class="required-mark" th:if="${cell.bookmarkRequired != null and #lists.size(cell.bookmarkRequired) > iter.index and cell.bookmarkRequired[iter.index]}">*</span>
+                              <!-- 根据每个书签的类型分别渲染控件 -->
+                              <th:block th:if="${cell.bookmarkTypes != null
+                                          and #lists.size(cell.bookmarkTypes) > iter.index
+                                          and cell.bookmarkTypes[iter.index] == 'image'}">
+                                <div class="photo-box photo-box--inline" th:data-input="${bmName}"
+                                     th:classappend="${cell.bookmarkEnabled != null and #lists.size(cell.bookmarkEnabled) > iter.index and !cell.bookmarkEnabled[iter.index] ? 'photo-box--disabled' : ''}">
+                                  <div class="photo-placeholder">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                                    <span>点击上传</span>
+                                  </div>
+                                  <img class="photo-preview" alt="预览"/>
+                                  <input type="file" th:name="${bmName}" accept="image/jpeg,image/png,image/gif" data-max-size="2097152"
+                                         th:disabled="${cell.bookmarkEnabled != null and #lists.size(cell.bookmarkEnabled) > iter.index and !cell.bookmarkEnabled[iter.index]}"/>
+                                </div>
+                              </th:block>
+                              <th:block th:if="${cell.bookmarkTypes != null
+                                          and #lists.size(cell.bookmarkTypes) > iter.index
+                                          and cell.bookmarkTypes[iter.index] == 'date'}">
+                                <input type="date" th:name="${bmName}" class="input-morandi"
+                                       th:required="${cell.bookmarkRequired == null or #lists.size(cell.bookmarkRequired) <= iter.index or cell.bookmarkRequired[iter.index]}"
+                                       th:disabled="${cell.bookmarkEnabled != null and #lists.size(cell.bookmarkEnabled) > iter.index and !cell.bookmarkEnabled[iter.index]}"
+                                       th:value="${formDraft != null and formDraft.containsKey(bmName) ? formDraft.get(bmName) : ''}"/>
+                              </th:block>
+                              <th:block th:if="${cell.bookmarkTypes != null
+                                          and #lists.size(cell.bookmarkTypes) > iter.index
+                                          and cell.bookmarkTypes[iter.index] == 'radio'}">
+                                <span class="radio-group">
+                                  <span><input type="radio" th:name="${bmName}" value="男"
+                                        th:required="${cell.bookmarkRequired == null or #lists.size(cell.bookmarkRequired) <= iter.index or cell.bookmarkRequired[iter.index]}"
+                                        th:disabled="${cell.bookmarkEnabled != null and #lists.size(cell.bookmarkEnabled) > iter.index and !cell.bookmarkEnabled[iter.index]}"
+                                        th:checked="${formDraft != null and formDraft.containsKey(bmName) and formDraft.get(bmName) == '男'}"/>男</span>
+                                  <span><input type="radio" th:name="${bmName}" value="女"
+                                        th:required="${cell.bookmarkRequired == null or #lists.size(cell.bookmarkRequired) <= iter.index or cell.bookmarkRequired[iter.index]}"
+                                        th:disabled="${cell.bookmarkEnabled != null and #lists.size(cell.bookmarkEnabled) > iter.index and !cell.bookmarkEnabled[iter.index]}"
+                                        th:checked="${formDraft != null and formDraft.containsKey(bmName) and formDraft.get(bmName) == '女'}"/>女</span>
+                                </span>
+                              </th:block>
+                              <input th:if="${cell.bookmarkTypes == null
+                                          or #lists.size(cell.bookmarkTypes) <= iter.index
+                                          or cell.bookmarkTypes[iter.index] == 'text'}"
+                                     type="text" th:name="${bmName}" class="input-morandi"
+                                     th:required="${cell.bookmarkRequired == null or #lists.size(cell.bookmarkRequired) <= iter.index or cell.bookmarkRequired[iter.index]}"
+                                     th:disabled="${cell.bookmarkEnabled != null and #lists.size(cell.bookmarkEnabled) > iter.index and !cell.bookmarkEnabled[iter.index]}"
+                                     th:value="${formDraft != null and formDraft.containsKey(bmName) ? formDraft.get(bmName) : ''}"/>
+                            </div>
+                          </div>
+                        </th:block>
+                      </span>
+                      <span th:if="${not cell.isBookmark}" th:text="${cell.text}" style="font-size:13px;">单元格文本</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- === 工作经历（前端动态增删行，仅当模板含 work_ 书签时显示） === -->
+          <div class="form-section" id="workExpSection" th:if="${hasWorkExperience}">
+            <div class="section-header">
+              <span>工作经历</span>
+              <button type="button" class="btn-spring btn-add-exp" id="btnAddWorkExp" style="margin-left:auto;">
+                + 添加经历
+              </button>
+            </div>
+            <div class="table-scroll">
+              <table class="exp-table" id="workExpTable">
+                <thead>
+                  <tr>
+                    <th style="width:44px;">#</th>
+                    <th style="min-width:200px;">起止时间</th>
+                    <th>工作单位</th>
+                    <th style="width:140px;">职务</th>
+                    <th style="width:80px;">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="workExpBody">
+                  <!-- 默认 1 行（带 name 以兼容无 JS 场景），其余行由 JS 动态生成 -->
+                  <tr class="exp-row">
+                    <td><span class="exp-index">1</span></td>
+                    <td>
+                      <div class="exp-date-cell">
+                        <input type="date" name="workExp[0].startDate" data-field="startDate" class="input-morandi"/>
+                        <span class="exp-dash">-</span>
+                        <input type="date" name="workExp[0].endDate" data-field="endDate" class="input-morandi"/>
+                      </div>
+                    </td>
+                    <td><input type="text" name="workExp[0].companyName" data-field="companyName" class="input-morandi" placeholder="工作单位"/></td>
+                    <td><input type="text" name="workExp[0].position" data-field="position" class="input-morandi" placeholder="职务"/></td>
+                    <td class="exp-action-cell"><button type="button" class="btn-del-exp" title="删除该行">✕</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- === 提交 === -->
+          <div class="form-submit-bar">
+            <button type="submit" class="btn-spring" id="submitBtn">提交申报</button>
+          </div>
+
+        </form>
+      </th:block>
+
+    </div>
+  </div>
+
+  <!-- 内联 boot 脚本：仅注入 Thymeleaf 渲染期变量，逻辑已外置到 student-form.js -->
+  <script th:inline="javascript">
+    window.activityId = /*[[${activityId}]]*/ '';
+    window.activityData = /*[[${activity}]]*/ null;
+  </script>
+  <script th:src="@{/js/student-form.js}"></script>
+
+  <th:block th:replace="~{common/layout :: scripts}"/>
+</body>
+</html>

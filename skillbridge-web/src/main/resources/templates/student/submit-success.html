@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>提交成功 - SkillBridge</title>
+  <th:block th:replace="~{common/layout :: styles}"/>
+  <style>
+    .success-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .success-card {
+      width: 100%;
+      max-width: 480px;
+      padding: 48px 40px 40px;
+      text-align: center;
+    }
+    .success-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: rgba(160, 200, 180, 0.20);
+      margin: 0 auto 20px;
+      color: #5A7A6A;
+      font-size: 28px;
+    }
+    .success-card h1 {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--morandi-text-primary);
+      margin-bottom: 8px;
+      letter-spacing: 0.3px;
+    }
+    .success-card p {
+      font-size: 14px;
+      color: var(--morandi-text-secondary);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <th:block th:replace="~{common/layout :: bg-cursor}"/>
+
+  <div class="success-wrap">
+    <div class="success-card glass-card">
+      <div class="success-icon">✓</div>
+      <h1>提交成功</h1>
+      <p>您的报名信息已成功提交。</p>
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+        <a th:href="@{/student/activity/{id}/view-submission(id=${activityId})}" class="btn-spring">查看我提交的内容</a>
+        <a th:href="@{/student/activity/{id}/download(id=${activityId})}" class="btn-spring btn-spring--ghost">下载我的申报表 Word</a>
+      </div>
+      <p style="font-size: 12px; color: var(--morandi-text-muted); margin-bottom: 16px;">
+        提交后无法修改。如需再次查看，也可使用学号和身份证号重新登录。
+      </p>
+      <a th:href="@{/student/login(activityId=${activityId})}" class="link-morandi">返回活动登录页</a>
+    </div>
+  </div>
+
+  <th:block th:replace="~{common/layout :: scripts}"/>
+</body>
+</html>

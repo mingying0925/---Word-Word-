@@ -1,0 +1,518 @@
+/* ===== 报名表单专用样式（从 student/form.html 内联 <style> 提取） =====
+   依赖 global.css 中的 CSS 变量：--morandi-* / --radius-* / --spring-* 等 */
+
+/* ===== Layout ===== */
+.form-page-wrap {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 32px 24px 100px;
+  /* 由浏览器窗口统一处理垂直滚动，坚决杜绝局部小框拉条 */
+}
+.form-card {
+  width: 100%;
+  max-width: 96%;
+  padding: 36px 40px 28px;
+  /* 显式解除任何高度/滚动限制，让内容自然向下延伸 */
+  height: auto;
+  max-height: none;
+  overflow: visible;
+  /* 关闭 glass-card 的 hover 位移，避免破坏内部 sticky 定位 */
+}
+.form-card:hover {
+  transform: none;
+}
+
+/* ===== Top Bar ===== */
+.form-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.form-top h1 {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--morandi-text-primary);
+  letter-spacing: 0.3px;
+}
+
+/* ===== Student Info Badge ===== */
+.student-badge {
+  display: flex;
+  gap: 28px;
+  background: rgba(255,255,255,0.20);
+  border: 1px solid var(--morandi-border);
+  border-radius: var(--radius-sm);
+  padding: 12px 18px;
+  margin-bottom: 24px;
+  font-size: 13px;
+  color: var(--morandi-text-secondary);
+}
+.student-badge strong {
+  color: var(--morandi-text-primary);
+  font-weight: 500;
+}
+
+/* ===== Preview Banner ===== */
+.preview-banner {
+  background: rgba(200,180,160,0.15);
+  border: 1px solid rgba(200,180,160,0.30);
+  border-radius: var(--radius-sm);
+  padding: 12px 18px;
+  margin-bottom: 24px;
+  font-size: 13px;
+  color: #8A7A6A;
+}
+
+/* ===== Section ===== */
+.form-section {
+  background: rgba(255,255,255,0.16);
+  border: 1px solid var(--morandi-border);
+  border-radius: var(--radius-md);
+  padding: 24px 28px 28px;
+  margin-bottom: 22px;
+  /* 显式解除高度与滚动限制，让 47 个字段自然舒展 */
+  height: auto;
+  max-height: none;
+  overflow: visible;
+}
+.form-section:last-of-type {
+  margin-bottom: 0;
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--morandi-text-primary);
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.30);
+}
+.section-header::before {
+  content: '';
+  width: 3px;
+  height: 16px;
+  background: var(--morandi-primary);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* ===== Dynamic Table (glass style) ===== */
+.table-scroll {
+  /* 允许窄屏横向滚动，避免内容被裁剪；宽屏因 table-layout: fixed 不会出现滚动条 */
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 4px;
+  max-height: none;
+  width: 100%;
+}
+.form-table {
+  width: 100%;
+  border-collapse: collapse;
+  /* 强制固定布局：表格永远不会撑破容器，配合 overflow: hidden 杜绝横向拉条 */
+  table-layout: fixed;
+}
+.form-table td {
+  padding: 12px 16px;
+  vertical-align: middle;
+  border: 1px solid rgba(0,0,0,0.05);
+  background: rgba(255,255,255,0.08);
+  font-size: 13px;
+  color: var(--morandi-text-secondary);
+}
+.form-table td.label-cell {
+  background: rgba(139,164,184,0.05);
+  font-weight: 500;
+  color: var(--morandi-text-primary);
+  text-align: center;
+  /* 取消死板固定宽度，按比例分配；遇到窄屏自然换行而非撑爆容器 */
+  width: 15%;
+  min-width: 0;
+  word-break: break-word;
+  white-space: normal;
+}
+.form-table td.bookmark-cell {
+  background: rgba(255,255,255,0.15);
+  /* 输入框单元格自动平分并撑满剩余空间 */
+  width: auto;
+}
+/* 强制输入框去适应单元格，绝不撑破容器 */
+.form-table .bookmark-cell input,
+.form-table .bookmark-cell select {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.form-table input[type="text"],
+.form-table input[type="date"],
+.form-table select {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--morandi-text-primary);
+  background: rgba(255,255,255,0.45);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 6px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.25s var(--spring-smooth),
+              box-shadow 0.25s var(--spring-smooth);
+}
+.form-table input:focus {
+  border-color: var(--morandi-primary);
+  box-shadow: 0 0 0 3px var(--morandi-primary-light);
+  background: rgba(255,255,255,0.65);
+}
+.form-table .radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+}
+.form-table .radio-group label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--morandi-text-primary);
+  cursor: pointer;
+}
+.form-table .radio-group input[type="radio"] {
+  accent-color: var(--morandi-primary);
+  width: 15px;
+  height: 15px;
+}
+.form-table .multi-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.form-table .multi-field .field-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.form-table .multi-field .field-row label {
+  font-size: 12px;
+  color: var(--morandi-text-muted);
+  white-space: nowrap;
+  min-width: 60px;
+}
+.form-table .multi-field .field-row input {
+  flex: 1;
+}
+.form-table input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.form-table input:disabled:focus {
+  border-color: rgba(0,0,0,0.06);
+  box-shadow: none;
+  background: rgba(255,255,255,0.40);
+}
+.photo-box.photo-box--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ===== Work Experience ===== */
+.exp-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.exp-table thead th {
+  padding: 10px 10px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--morandi-text-muted);
+  text-align: left;
+  border-bottom: 1px solid rgba(255,255,255,0.25);
+}
+.exp-table tbody td {
+  padding: 8px 8px 8px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+  vertical-align: middle;
+}
+.exp-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.exp-table .input-morandi {
+  padding: 8px 10px;
+  font-size: 13px;
+}
+.exp-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(139,164,184,0.12);
+  color: var(--morandi-primary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ===== Work Experience Dynamic Controls ===== */
+.exp-date-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.exp-date-cell .exp-dash {
+  color: var(--morandi-text-muted);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.exp-action-cell {
+  text-align: center;
+}
+.btn-add-exp {
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  min-width: auto;
+}
+.btn-del-exp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--morandi-border-strong);
+  background: rgba(255,255,255,0.30);
+  color: var(--morandi-text-secondary);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background 0.25s var(--spring-smooth),
+    color 0.25s var(--spring-smooth),
+    transform 0.25s var(--spring-bounce),
+    border-color 0.25s var(--spring-smooth);
+}
+.btn-del-exp:hover {
+  background: rgba(212, 160, 160, 0.25);
+  color: #8A5A5A;
+  border-color: rgba(212, 160, 160, 0.40);
+  transform: scale(1.08);
+}
+.btn-del-exp:active {
+  transform: scale(0.92);
+  transition-duration: 0.08s;
+}
+
+/* ===== Photo Upload ===== */
+.photo-area {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+.photo-box {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  border-radius: var(--radius-md);
+  border: 2px dashed rgba(0,0,0,0.08);
+  background: rgba(255,255,255,0.18);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.30s var(--spring-smooth),
+              background 0.30s var(--spring-smooth),
+              transform 0.25s var(--spring-bounce);
+  overflow: hidden;
+}
+.photo-box:hover {
+  border-color: var(--morandi-primary);
+  background: rgba(139,164,184,0.07);
+  transform: scale(1.03);
+}
+.photo-box.drag-over {
+  border-color: var(--morandi-primary);
+  background: rgba(139,164,184,0.13);
+  transform: scale(1.05);
+}
+.photo-box.has-image .photo-placeholder {
+  display: none;
+}
+.photo-box.has-image .photo-preview {
+  display: block;
+}
+.photo-box .photo-placeholder {
+  text-align: center;
+}
+.photo-box .photo-placeholder svg {
+  width: 32px;
+  height: 32px;
+  color: var(--morandi-text-muted);
+  margin-bottom: 6px;
+  transition: color 0.30s var(--spring-smooth);
+}
+.photo-box:hover .photo-placeholder svg {
+  color: var(--morandi-primary);
+}
+.photo-box .photo-placeholder span {
+  display: block;
+  font-size: 12px;
+  color: var(--morandi-text-muted);
+}
+.photo-box .photo-preview {
+  display: none;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.photo-box input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+/* 多书签单元格中的内联图片框（较小尺寸） */
+.photo-box.photo-box--inline {
+  width: 90px;
+  height: 90px;
+}
+.photo-box.photo-box--inline .photo-placeholder svg {
+  width: 22px;
+  height: 22px;
+  margin-bottom: 2px;
+}
+.photo-box.photo-box--inline .photo-placeholder span {
+  font-size: 10px;
+}
+.photo-hint {
+  font-size: 13px;
+  color: var(--morandi-text-muted);
+  line-height: 1.6;
+}
+.photo-hint strong {
+  color: var(--morandi-text-secondary);
+  font-weight: 500;
+}
+
+/* ===== Submit Bar ===== */
+.form-submit-bar {
+  position: sticky;
+  bottom: 0;
+  margin-top: 28px;
+  padding: 20px 0 8px;
+  border-top: 1px solid rgba(255,255,255,0.20);
+  text-align: center;
+  /* 加底色保证向下滚动时提交按钮始终清晰可见、完美吸底 */
+  background: linear-gradient(
+    to bottom,
+    rgba(245, 240, 235, 0) 0%,
+    rgba(245, 240, 235, 0.65) 35%,
+    rgba(245, 240, 235, 0.85) 100%
+  );
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 10;
+}
+.form-submit-bar .btn-spring {
+  min-width: 260px;
+  padding: 14px 40px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+/* ===== 必填字段标记 ===== */
+.required-mark {
+  color: #C97B7B;
+  margin-left: 2px;
+  font-weight: 600;
+}
+.form-legend {
+  font-size: 12px;
+  color: var(--morandi-text-muted);
+  margin-bottom: 14px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.12);
+  border-radius: var(--radius-sm);
+}
+.form-legend .required-mark {
+  font-size: 13px;
+}
+
+/* ===== 填写进度条 ===== */
+.progress-bar-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(245, 240, 235, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 10px 16px 8px;
+  margin: -36px -40px 20px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+.progress-bar-wrap .progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--morandi-text-secondary);
+  margin-bottom: 6px;
+}
+.progress-bar-wrap .progress-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(0,0,0,0.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-bar-wrap .progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--morandi-primary), var(--morandi-secondary));
+  border-radius: 3px;
+  width: 0%;
+  transition: width 0.3s var(--spring-smooth);
+}
+
+/* ===== 草稿恢复提示 ===== */
+.draft-restored-banner {
+  background: rgba(139, 164, 184, 0.15);
+  border: 1px solid rgba(139, 164, 184, 0.30);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--morandi-text-secondary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.draft-restored-banner button {
+  background: none;
+  border: none;
+  color: var(--morandi-secondary);
+  cursor: pointer;
+  font-size: 12px;
+  text-decoration: underline;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 720px) {
+  .form-page-wrap { padding: 20px 14px 90px; }
+  .form-card { padding: 24px 18px; }
+  .form-section { padding: 18px 16px 22px; }
+  .form-table td { padding: 8px 10px; }
+  /* 窄屏时适当收窄标签列，避免触发横向拉条 */
+  .form-table td.label-cell { min-width: 96px; width: 96px; }
+  .photo-area { flex-direction: column; align-items: flex-start; }
+  .exp-table thead { display: none; }
+  .exp-table tbody td { display: block; padding: 6px 8px; border-bottom: none; }
+  .exp-table tbody tr { display: block; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.12); }
+}

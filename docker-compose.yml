@@ -1,0 +1,90 @@
+# SkillBridge 一键部署 docker-compose
+# 使用方式: docker-compose up -d
+# 前置条件: 创建 .env 文件配置密钥（参考 .env.example）
+
+version: '3.8'
+
+services:
+  # MySQL 数据库
+  mysql:
+    image: mysql:8.0
+    container_name: skillbridge-mysql
+    environment:
+      MYSQL_DATABASE: skillbridge
+      MYSQL_USER: ${DB_USERNAME:-skillbridge}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-skillbridge_pass}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_pass}
+    # 生产环境应移除端口映射，仅通过内部网络访问
+    # ports:
+    #   - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - skillbridge-net
+
+  # Java 主服务
+  web:
+    build: ./skillbridge-web
+    container_name: skillbridge-web
+    depends_on:
+      mysql:
+        condition: service_healthy
+      export:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:mysql://mysql:3306/skillbridge?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf8
+      DB_USERNAME: ${DB_USERNAME:-skillbridge}
+      DB_PASSWORD: ${DB_PASSWORD:-skillbridge_pass}
+      JWT_SECRET: ${JWT_SECRET:-SkillBridgeProductionSecretKey2026ChangeMe}
+      CRYPTO_SECRET: ${CRYPTO_SECRET:-SkillBridgeCryptoSecret2026ChangeMe}
+      TEACHER_DEFAULT_ID: ${TEACHER_DEFAULT_ID:-admin}
+      TEACHER_DEFAULT_PASSWORD: ${TEACHER_DEFAULT_PASSWORD:-ChangeMe123!}
+      JWT_COOKIE_SECURE: "true"
+      JWT_COOKIE_SAMESITE: Lax
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - web_uploads:/app/uploads
+      - web_logs:/app/logs
+    networks:
+      - skillbridge-net
+
+  # Python 导出微服务
+  export:
+    build: ./skillbridge-export
+    container_name: skillbridge-export
+    environment:
+      FLASK_DEBUG: "0"
+    ports:
+      - "5000:5000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    volumes:
+      - web_uploads:/app/uploads
+    networks:
+      - skillbridge-net
+
+volumes:
+  mysql_data:
+  web_uploads:
+  web_logs:
+
+networks:
+  skillbridge-net:
+    driver: bridge

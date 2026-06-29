@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>查看报名信息 - SkillBridge</title>
+  <th:block th:replace="~{common/layout :: styles}"/>
+  <style>
+    .view-wrap {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 32px 24px 100px;
+    }
+    .view-card {
+      width: 100%;
+      max-width: 800px;
+      padding: 36px 40px 28px;
+    }
+    .view-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .view-top h1 {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--morandi-text-primary);
+      letter-spacing: 0.3px;
+    }
+    .info-banner {
+      background: rgba(160, 200, 180, 0.15);
+      border: 1px solid rgba(160, 200, 180, 0.30);
+      border-radius: var(--radius-sm);
+      padding: 12px 18px;
+      margin-bottom: 24px;
+      font-size: 13px;
+      color: #5A7A6A;
+    }
+    .meta-row {
+      display: flex;
+      gap: 28px;
+      flex-wrap: wrap;
+      background: rgba(255,255,255,0.20);
+      border: 1px solid var(--morandi-border);
+      border-radius: var(--radius-sm);
+      padding: 12px 18px;
+      margin-bottom: 24px;
+      font-size: 13px;
+      color: var(--morandi-text-secondary);
+    }
+    .meta-row strong { color: var(--morandi-text-primary); font-weight: 500; }
+    .field-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .field-table th,
+    .field-table td {
+      padding: 10px 14px;
+      border: 1px solid rgba(255,255,255,0.15);
+      text-align: left;
+      vertical-align: top;
+    }
+    .field-table th {
+      background: rgba(255,255,255,0.10);
+      font-weight: 500;
+      color: var(--morandi-text-primary);
+      white-space: nowrap;
+      width: 35%;
+    }
+    .field-table td {
+      color: var(--morandi-text-secondary);
+      word-break: break-all;
+    }
+    .field-table td.image-path {
+      font-family: monospace;
+      font-size: 11px;
+      color: var(--morandi-text-muted);
+    }
+    .field-table td.image-cell {
+      padding: 8px;
+    }
+    .field-table td.image-cell img {
+      max-width: 120px;
+      max-height: 160px;
+      border-radius: 6px;
+      border: 1px solid rgba(0,0,0,0.08);
+      object-fit: cover;
+    }
+    .field-table td.image-cell .image-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      font-size: 12px;
+      color: #5A7A6A;
+      background: rgba(160, 200, 180, 0.15);
+      border-radius: 12px;
+    }
+    .field-table tr:nth-child(even) td { background: rgba(255,255,255,0.05); }
+    .section-label {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--morandi-text-primary);
+      margin: 20px 0 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+    }
+    .actions {
+      margin-top: 28px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .actions .btn-download {
+      background: var(--morandi-secondary);
+      color: #fff;
+    }
+    .actions .btn-download:hover {
+      background: var(--morandi-secondary-hover);
+    }
+    @media (max-width: 480px) {
+      .view-wrap { padding: 12px 8px 60px; }
+      .view-card { padding: 18px 14px 16px; }
+      .view-top h1 { font-size: 18px; }
+      .meta-row { flex-direction: column; gap: 6px; }
+      .field-table th { width: 40%; }
+    }
+  </style>
+</head>
+<body>
+  <th:block th:replace="~{common/layout :: bg-cursor}"/>
+
+  <div class="view-wrap">
+    <div class="view-card glass-card">
+      <div class="view-top">
+        <h1 th:text="${activity != null ? activity.name : '报名信息'}">报名信息</h1>
+        <a th:href="@{/student/login(activityId=${activityId})}" class="link-morandi">退出</a>
+      </div>
+
+      <div class="info-banner" th:if="${info}" th:text="${info}" style="background: rgba(139, 164, 184, 0.15); border-color: rgba(139, 164, 184, 0.30); color: var(--morandi-text-secondary); margin-bottom: 16px;">
+        提示信息
+      </div>
+
+      <div class="info-banner">
+        ✓ 您已提交报名信息，以下为您的填写内容。<strong>提交后无法自行修改</strong>，如发现填写错误，请联系指导教师处理。
+      </div>
+
+      <div class="meta-row">
+        <span><strong>学号：</strong><span th:text="${submission.studentId}">—</span></span>
+        <span><strong>提交时间：</strong><span th:text="${submission.submitTime != null ? #temporals.format(submission.submitTime, 'yyyy-MM-dd HH:mm:ss') : '—'}">—</span></span>
+        <span><strong>活动状态：</strong>
+          <span th:if="${activity.status == 0}">报名中</span>
+          <span th:if="${activity.status == 1}">已截止</span>
+        </span>
+      </div>
+
+      <div class="section-label">填写字段</div>
+      <div class="table-wrap" style="overflow-x: auto;">
+        <table class="field-table">
+          <tbody>
+          <tr th:each="entry : ${formData}">
+            <th th:text="${entry.key}">字段名</th>
+            <td th:if="${entry.value != null and entry.value.startsWith('/')}"
+                class="image-cell">
+              <!-- 图片字段：渲染为缩略图，不再暴露服务器路径 -->
+              <img th:src="${entry.value}" alt="已上传图片" th:if="${entry.value.endsWith('.jpg') or entry.value.endsWith('.jpeg') or entry.value.endsWith('.png') or entry.value.endsWith('.gif')}"/>
+              <span class="image-badge" th:if="${not (entry.value.endsWith('.jpg') or entry.value.endsWith('.jpeg') or entry.value.endsWith('.png') or entry.value.endsWith('.gif'))}">📷 已上传照片</span>
+            </td>
+            <td th:if="${entry.value == null or !entry.value.startsWith('/')}"
+                th:text="${entry.value != null ? entry.value : '—'}">值</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="actions">
+        <a th:href="@{/student/activity/{id}/download(id=${activityId})}" class="btn-spring btn-download">下载我的申报表 Word</a>
+        <a th:href="@{/student/login(activityId=${activityId})}" class="btn-spring btn-spring--ghost">返回登录页</a>
+        <a th:href="@{/}" class="link-morandi">返回首页</a>
+      </div>
+    </div>
+  </div>
+
+  <th:block th:replace="~{common/layout :: scripts}"/>
+</body>
+</html>

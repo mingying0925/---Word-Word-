@@ -1,0 +1,54 @@
+# Logs
+*.log
+*.log.err
+*.err
+
+# Process files
+*.pid
+
+# Python
+__pycache__/
+.pytest_cache/
+venv/
+offline_packages/
+
+# Uploads (runtime-generated template files)
+skillbridge-web/uploads/
+skillbridge-export/uploads/
+
+# Debug / scratch files
+h2*.txt
+cookies.txt
+headers.txt
+stu_cookies.txt
+subs.html
+submission_*.docx
+
+# Word documents (root and skillbridge-export only)
+/*.docx
+/skillbridge-export/*.docx
+/scripts/*.doc
+/scripts/*.docx
+
+# IDE
+.vscode/
+.trae/
+
+# Runtime logs
+logs/
+.idea/
+*.iml
+
+# Maven
+skillbridge-web/target/
+
+# Environment files
+.env
+application-local.yml
+
+# Production config with secrets (template only)
+deploy/application-prod.yml
+
+# Docker
+.dockerignore
+

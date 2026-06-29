@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title th:text="#{teacher.accounts.title} + ' - SkillBridge'">账号管理 - SkillBridge</title>
+  <th:block th:replace="~{common/layout :: styles}"/>
+  <style>
+    .form-section {
+      background: rgba(255,255,255,0.16);
+      border: 1px solid var(--morandi-border);
+      border-radius: var(--radius-md);
+      padding: 24px 28px 28px;
+      margin-bottom: 22px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--morandi-text-primary);
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.30);
+    }
+    .section-header::before {
+      content: '';
+      width: 3px;
+      height: 16px;
+      background: var(--morandi-primary);
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .create-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: flex-end;
+    }
+    .create-form .form-group {
+      flex: 1;
+      min-width: 160px;
+    }
+    .create-form label {
+      display: block;
+      font-size: 12px;
+      color: var(--morandi-text-muted);
+      margin-bottom: 6px;
+    }
+    .create-form input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--morandi-border);
+      border-radius: var(--radius-sm);
+      background: rgba(255,255,255,0.12);
+      color: var(--morandi-text-primary);
+      font-size: 14px;
+    }
+    .create-form input:focus {
+      outline: none;
+      border-color: var(--morandi-primary);
+      background: rgba(255,255,255,0.20);
+    }
+    .create-form .btn-spring {
+      min-width: 120px;
+      padding: 10px 24px;
+    }
+    .teacher-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .teacher-table th {
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--morandi-text-muted);
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.25);
+    }
+    .teacher-table td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+      font-size: 13px;
+      color: var(--morandi-text-secondary);
+      vertical-align: middle;
+    }
+    .teacher-table tr:last-child td { border-bottom: none; }
+    .status-tag.status-active {
+      background: rgba(100,160,120,0.20);
+      color: #6A9A7A;
+    }
+    .status-tag.status-disabled {
+      background: rgba(200,100,100,0.15);
+      color: #B07070;
+    }
+    .action-btn {
+      display: inline-block;
+      padding: 4px 12px;
+      font-size: 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--morandi-border);
+      background: rgba(255,255,255,0.10);
+      color: var(--morandi-text-secondary);
+      cursor: pointer;
+      text-decoration: none;
+      margin-right: 8px;
+    }
+    .action-btn:hover {
+      background: rgba(255,255,255,0.20);
+      text-decoration: none;
+    }
+    .reset-form {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .reset-form input {
+      width: 120px;
+      padding: 4px 8px;
+      font-size: 12px;
+      border: 1px solid var(--morandi-border);
+      border-radius: var(--radius-sm);
+      background: rgba(255,255,255,0.12);
+      color: var(--morandi-text-primary);
+    }
+    .reset-form button {
+      padding: 4px 10px;
+      font-size: 12px;
+      border: none;
+      border-radius: var(--radius-sm);
+      background: var(--morandi-primary);
+      color: #fff;
+      cursor: pointer;
+    }
+
+    @media (max-width: 480px) {
+      .create-form { flex-direction: column; }
+      .create-form .form-group { min-width: 0; }
+      .create-form .btn-spring { width: 100%; }
+      .reset-form { flex-direction: column; gap: 6px; }
+      .reset-form input { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-link" th:text="#{a11y.skipToMain}">跳到主要内容</a>
+  <th:block th:replace="~{common/layout :: bg-cursor}"/>
+
+  <div class="page-wrap">
+    <div class="page-card glass-card" id="main-content">
+
+      <th:block th:replace="~{common/layout :: teacher-nav(active='accounts', title=#{teacher.accounts.title})}"/>
+
+      <div th:if="${msg}" class="msg-morandi msg-morandi--success" th:text="${msg}" style="margin-bottom:16px;">成功消息</div>
+      <div th:if="${error}" class="msg-morandi msg-morandi--error" th:text="${error}" style="margin-bottom:16px;">错误消息</div>
+
+      <!-- ===== 创建账号 ===== -->
+      <div class="form-section">
+        <div class="section-header" th:text="#{teacher.accounts.section.create}">创建新账号</div>
+        <form th:action="@{/teacher/accounts/create}" method="post" class="create-form">
+          <input type="hidden" name="_csrf" th:value="${session.csrfToken}"/>
+          <div class="form-group">
+            <label th:text="#{teacher.accounts.label.teacherId}">工号</label>
+            <input type="text" name="teacherId" required minlength="2" maxlength="20"
+                   pattern="^[a-zA-Z0-9]{2,20}$"
+                   th:attr="title=#{teacher.accounts.titleAttr.teacherId}, placeholder=#{teacher.accounts.placeholder.teacherId}"/>
+          </div>
+          <div class="form-group">
+            <label th:text="#{teacher.accounts.label.name}">姓名</label>
+            <input type="text" name="name" required maxlength="50"
+                   th:attr="placeholder=#{teacher.accounts.placeholder.name}"/>
+          </div>
+          <div class="form-group">
+            <label th:text="#{teacher.accounts.label.password}">密码</label>
+            <input type="password" name="password" required minlength="6"
+                   th:attr="placeholder=#{teacher.accounts.placeholder.password}"/>
+          </div>
+          <button type="submit" class="btn-spring" th:text="#{teacher.accounts.btn.create}">创建</button>
+        </form>
+      </div>
+
+      <!-- ===== 账号列表 ===== -->
+      <div class="form-section">
+        <div class="section-header" th:text="#{teacher.accounts.section.list}">账号列表</div>
+        <div th:if="${#lists.isEmpty(teachers)}" style="padding:16px;color:var(--morandi-text-muted);font-size:13px;"
+             th:text="#{teacher.accounts.empty}">
+          暂无教师账号。
+        </div>
+        <table th:if="${not #lists.isEmpty(teachers)}" class="teacher-table">
+          <thead>
+            <tr>
+              <th th:text="#{teacher.accounts.column.teacherId}">工号</th>
+              <th th:text="#{teacher.accounts.column.name}">姓名</th>
+              <th th:text="#{teacher.accounts.column.status}">状态</th>
+              <th th:text="#{teacher.accounts.column.createdAt}">创建时间</th>
+              <th th:text="#{teacher.accounts.column.actions}">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="t : ${teachers}">
+              <td th:text="${t.teacherId}">工号</td>
+              <td th:text="${t.name}">姓名</td>
+              <td>
+                <span th:if="${t.status == 0}" class="status-tag status-active" th:text="#{teacher.accounts.status.active}">启用</span>
+                <span th:if="${t.status != 0}" class="status-tag status-disabled" th:text="#{teacher.accounts.status.disabled}">禁用</span>
+              </td>
+              <td th:text="${t.createdAt != null ? #temporals.format(t.createdAt, 'yyyy-MM-dd HH:mm') : '—'}">时间</td>
+              <td>
+                <form th:action="@{/teacher/accounts/{id}/toggle-status(id=${t.id})}" method="post" style="display:inline;">
+                  <input type="hidden" name="_csrf" th:value="${session.csrfToken}"/>
+                  <button type="submit" class="action-btn">
+                  <span th:if="${t.status == 0}" th:text="#{teacher.accounts.action.disable}">禁用</span>
+                  <span th:if="${t.status != 0}" th:text="#{teacher.accounts.action.enable}">启用</span>
+                  </button>
+                </form>
+                <form th:action="@{/teacher/accounts/{id}/reset-password(id=${t.id})}" method="post" class="reset-form" style="display:inline;">
+                  <input type="hidden" name="_csrf" th:value="${session.csrfToken}"/>
+                  <input type="password" name="newPassword" required minlength="6"
+                         th:attr="placeholder=#{teacher.accounts.placeholder.newPassword}"/>
+                  <button type="submit" th:text="#{teacher.accounts.action.reset}">重置</button>
+                </form>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <th:block th:replace="~{common/layout :: scripts}"/>
+</body>
+</html>

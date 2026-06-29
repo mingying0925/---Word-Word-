@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<!-- ===== Head Fragment ===== -->
+<head th:fragment="head(title)">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title th:text="${title}">SkillBridge</title>
+  <link rel="stylesheet" th:href="@{/css/global.css}"/>
+  <link rel="stylesheet" th:href="@{/css/pages.css}"/>
+</head>
+
+<!-- ===== Body Skeleton Fragment ===== -->
+<body th:fragment="body">
+  <div class="mesh-bg"></div>
+  <div class="mesh-bg-accent">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay">
+    <div class="loading-card">
+      <div class="loading-dots">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <div class="loading-text" th:text="#{app.loading}">正在处理，请稍候...</div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container"></div>
+
+  <div th:replace="${content}"></div>
+
+  <script th:src="@{/js/toast.js}"></script>
+</body>
+
+<!-- ===== Full Page Fragment (convenience, no layout dialect needed) ===== -->
+<th:block th:fragment="page(title, content)">
+  <!DOCTYPE html>
+  <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="~{common/layout :: head(title=${title})}"></head>
+    <body th:replace="~{common/layout :: body(content=${content})}"></body>
+  </html>
+</th:block>
+
+<!-- ===== Standalone Headless fragments for manual include ===== -->
+<th:block th:fragment="styles">
+  <link rel="stylesheet" th:href="@{/css/global.css}"/>
+  <link rel="stylesheet" th:href="@{/css/pages.css}"/>
+</th:block>
+
+<th:block th:fragment="scripts">
+  <script th:src="@{/js/toast.js}"></script>
+  <script th:src="@{/js/modal.js}"></script>
+  <th:block th:if="${sessionExpiresAt != null}">
+    <meta name="session-expires-at" th:content="${sessionExpiresAt}"/>
+    <script th:src="@{/js/session-timeout.js}"></script>
+  </th:block>
+  <footer class="version-footer">
+    SkillBridge <span th:text="${appVersion}">0.0.1</span>
+    · API <span th:text="${apiVersion}">v1</span>
+    · <span th:text="#{lang.switch}">语言</span>:
+    <a th:href="@{''(lang='zh')}" th:text="#{lang.zh}">中文</a>
+    |
+    <a th:href="@{''(lang='en')}" th:text="#{lang.en}">English</a>
+  </footer>
+</th:block>
+
+<th:block th:fragment="bg-cursor">
+  <div class="mesh-bg"></div>
+  <div class="mesh-bg-accent">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+  <!-- Loading Overlay -->
+  <div class="loading-overlay">
+    <div class="loading-card">
+      <div class="loading-dots">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <div class="loading-text" th:text="#{app.loading}">正在处理，请稍候...</div>
+    </div>
+  </div>
+  <!-- Toast Container -->
+  <div class="toast-container"></div>
+  <!-- Modal Container (lazy created by modal.js) -->
+  <div class="modal-root" aria-live="polite"></div>
+</th:block>
+
+<!-- ===== 教师端共享导航片段 ===== -->
+<!-- 用法: <th:block th:replace="~{common/layout :: teacher-nav(active='activities', title=#{teacher.activityList.title})}"/> -->
+<!-- active 可选值: dashboard / activities / templates / export-tasks / audit-logs / accounts / none -->
+<th:block th:fragment="teacher-nav(active, title)">
+  <div class="page-top">
+    <h1 th:text="${title}">页面标题</h1>
+    <nav class="page-nav" aria-label="教师端主导航">
+      <a class="btn-spring" th:href="@{/teacher/create}" th:text="#{btn.create}">+ 创建新活动</a>
+      <a th:href="@{/teacher/dashboard}" class="link-morandi"
+         th:classappend="${active == 'dashboard' ? 'nav-active' : ''}"
+         th:text="#{nav.dashboard}">仪表盘</a>
+      <a th:href="@{/teacher/activities}" class="link-morandi"
+         th:classappend="${active == 'activities' ? 'nav-active' : ''}"
+         th:text="#{nav.activities}">活动列表</a>
+      <a th:href="@{/teacher/templates}" class="link-morandi"
+         th:classappend="${active == 'templates' ? 'nav-active' : ''}"
+         th:text="#{nav.templates}">模板库</a>
+      <a th:href="@{/teacher/export-tasks}" class="link-morandi"
+         th:classappend="${active == 'export-tasks' ? 'nav-active' : ''}"
+         th:text="#{teacher.nav.exportTasks}">导出任务</a>
+      <a th:href="@{/teacher/audit-logs}" class="link-morandi"
+         th:classappend="${active == 'audit-logs' ? 'nav-active' : ''}"
+         th:text="#{teacher.nav.auditLogs}">审计日志</a>
+      <a th:href="@{/teacher/accounts}" class="link-morandi"
+         th:classappend="${active == 'accounts' ? 'nav-active' : ''}"
+         th:text="#{nav.accounts}">账号管理</a>
+      <a th:href="@{/logout}" class="link-morandi" th:text="#{nav.logout}">退出登录</a>
+    </nav>
+  </div>
+</th:block>
+
+<!-- ===== 学生端共享导航片段（精简版） ===== -->
+<th:block th:fragment="student-nav(active, title)">
+  <div class="page-top">
+    <h1 th:text="${title}">页面标题</h1>
+    <nav class="page-nav" aria-label="学生端导航">
+      <a th:if="${active != 'login'}" th:href="@{/}" class="link-morandi" th:text="#{nav.back} + ' ←'">← 返回</a>
+    </nav>
+  </div>
+</th:block>
+
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title th:text="#{teacher.roster.title} + ' - SkillBridge'">学生名单 - SkillBridge</title>
+  <th:block th:replace="~{common/layout :: styles}"/>
+  <style>
+    .roster-stats {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .stat-card {
+      flex: 1;
+      min-width: 140px;
+      padding: 14px 18px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      text-align: center;
+    }
+    .stat-card .stat-num {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--morandi-text-primary);
+      display: block;
+    }
+    .stat-card .stat-label {
+      font-size: 12px;
+      color: var(--morandi-text-muted);
+      margin-top: 4px;
+    }
+    .roster-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      padding: 16px 18px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 10px;
+    }
+    .roster-actions form {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .roster-actions input[type="file"] {
+      padding: 6px 10px;
+      font-size: 13px;
+    }
+    .status-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 12px;
+    }
+    .status-submitted {
+      background: rgba(76, 175, 80, 0.18);
+      color: #81c784;
+    }
+    .status-pending {
+      background: rgba(255, 152, 0, 0.18);
+      color: #ffb74d;
+    }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-link" th:text="#{a11y.skipToMain}">跳到主要内容</a>
+  <th:block th:replace="~{common/layout :: bg-cursor}"/>
+
+  <div class="page-wrap">
+    <div class="page-card glass-card" id="main-content">
+      <div class="page-top">
+        <h1 th:text="#{teacher.roster.title}">学生名单<span style="font-size:14px;color:var(--morandi-text-muted);margin-left:12px;" th:text="${activity != null ? activity.name : ''}">活动名称</span></h1>
+        <div class="page-nav">
+          <a th:href="@{/teacher/activities}" class="link-morandi" th:text="#{nav.back} + ' ←'">← 活动列表</a>
+          <a th:if="${activity != null}" th:href="@{/teacher/activity/{id}/submissions(id=${activity.id})}" class="link-morandi" th:text="#{teacher.activityList.action.viewSubmissions}">查看提交</a>
+          <a th:href="@{/teacher/dashboard}" class="link-morandi" th:text="#{nav.dashboard}">仪表盘</a>
+        </div>
+      </div>
+
+      <div th:if="${msg}" class="msg-morandi msg-morandi--success" th:text="${msg}" style="margin-bottom:16px;"></div>
+      <div th:if="${error}" class="msg-morandi msg-morandi--error" th:text="${error}" style="margin-bottom:16px;"></div>
+
+      <!-- 统计卡片 -->
+      <div class="roster-stats" th:if="${rosterCount > 0}">
+        <div class="stat-card">
+          <span class="stat-num" th:text="${rosterCount}">0</span>
+          <span class="stat-label" th:text="#{teacher.roster.totalCount}">名单总人数</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-num" th:text="${submittedCount}">0</span>
+          <span class="stat-label" th:text="#{teacher.roster.submittedCount}">已提交</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-num" th:text="${unsubmittedCount}">0</span>
+          <span class="stat-label" th:text="#{teacher.roster.unsubmittedCount}">未提交</span>
+        </div>
+      </div>
+
+      <!-- 操作区 -->
+      <div class="roster-actions">
+        <form method="post" th:action="@{/teacher/activity/{id}/roster/import(id=${activity.id})}"
+              enctype="multipart/form-data" id="rosterImportForm">
+          <input type="hidden" name="_csrf" th:value="${session.csrfToken}"/>
+          <input type="file" name="file" accept=".xlsx" required/>
+          <button type="submit" class="btn-spring" style="min-width:auto;padding:6px 16px;font-size:13px;" th:text="#{teacher.roster.import}">导入名单</button>
+        </form>
+        <a th:href="@{/teacher/activity/{id}/roster/template(id=${activity.id})}" class="link-morandi" th:text="#{teacher.roster.downloadTemplate}">下载模板</a>
+        <form th:if="${rosterCount > 0}" method="post"
+              th:action="@{/teacher/activity/{id}/roster/clear(id=${activity.id})}"
+              style="margin-left:auto;">
+          <input type="hidden" name="_csrf" th:value="${session.csrfToken}"/>
+          <button type="submit" class="btn-delete"
+                  th:data-confirm="#{confirm.clearRoster.message}"
+                  th:data-confirm-title="#{confirm.clearRoster.title}"
+                  data-confirm-danger
+                  th:text="#{teacher.roster.clear}">清空名单</button>
+        </form>
+      </div>
+
+      <!-- Excel 格式说明 -->
+      <div style="font-size:12px;color:var(--morandi-text-muted);padding:8px 12px;background:rgba(255,255,255,0.08);border-radius:6px;margin-bottom:12px;"
+           th:utext="#{teacher.roster.excelFormatHint}">
+        <strong>Excel 格式要求：</strong>第一行为表头（将被跳过），后续行依次为：学号 | 姓名 | 身份证号 | 班级（可选）。文件大小不超过 10MB，仅支持 .xlsx 格式。
+      </div>
+
+      <!-- 名单为空提示 -->
+      <div th:if="${rosterCount == 0}" class="empty-state">
+        <span th:text="#{teacher.roster.empty}">尚未导入学生名单。请先下载模板填写后导入，或直接上传 Excel 文件。</span>
+        <div class="hint" style="margin-top:8px;font-size:12px;color:var(--morandi-text-muted);" th:text="#{teacher.roster.emptyHint}">
+          导入名单后，学生登录时将进行白名单校验（仅名单内学生可提交）。
+        </div>
+      </div>
+
+      <!-- 名单表格 -->
+      <div class="table-wrap" th:if="${rosterCount > 0}">
+        <table class="data-table">
+          <thead>
+          <tr>
+            <th th:text="#{teacher.roster.column.index}">序号</th>
+            <th th:text="#{teacher.roster.column.studentId}">学号</th>
+            <th th:text="#{teacher.roster.column.name}">姓名</th>
+            <th th:text="#{teacher.roster.column.class}">班级</th>
+            <th th:text="#{teacher.roster.column.status}">提交状态</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="r, iter : ${roster}">
+            <td th:text="${iter.count}">1</td>
+            <td th:text="${r.entry.studentId}">学号</td>
+            <td th:text="${r.entry.studentName}">姓名</td>
+            <td th:text="${r.entry.className != null ? r.entry.className : '—'}">—</td>
+            <td>
+              <span th:if="${r.submitted}" class="status-tag status-submitted" th:text="#{status.submitted}">已提交</span>
+              <span th:unless="${r.submitted}" class="status-tag status-pending" th:text="#{status.pending}">未提交</span>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <th:block th:replace="~{common/layout :: scripts}"/>
+  <script th:inline="javascript">
+    // 导入名单时显示 loading
+    (function () {
+      var i18nLoading = /*[[#{teacher.roster.loading.import}]]*/ '正在导入名单，请稍候...';
+      var form = document.getElementById('rosterImportForm');
+      if (form) {
+        form.addEventListener('submit', function () {
+          if (typeof showLoading === 'function') {
+            showLoading(i18nLoading);
+          }
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>教师登录 - SkillBridge</title>
+  <th:block th:replace="~{common/layout :: styles}"/>
+  <style>
+    .login-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .login-card {
+      width: 100%;
+      max-width: 480px;
+      padding: 40px 36px 36px;
+      border-top: 3px solid var(--morandi-primary);
+    }
+    .login-card .role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--morandi-primary);
+      background: var(--morandi-primary-light);
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+    .login-card h1 {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--morandi-text-primary);
+      margin-bottom: 4px;
+      letter-spacing: 0.5px;
+    }
+    .login-card .sub {
+      font-size: 13px;
+      color: var(--morandi-text-muted);
+      margin-bottom: 28px;
+    }
+    .login-card .form-group {
+      margin-bottom: 20px;
+    }
+    .login-card .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--morandi-text-secondary);
+      margin-bottom: 6px;
+    }
+    .login-card .btn-spring {
+      width: 100%;
+      margin-top: 8px;
+      padding: 12px 28px;
+      font-size: 15px;
+    }
+    .login-card .field-error {
+      font-size: 12px;
+      color: #8A5A5A;
+      margin-top: 4px;
+      display: none;
+    }
+    .login-card .field-error.show {
+      display: block;
+    }
+    .login-card .back-portal {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      font-size: 13px;
+    }
+
+    @media (max-width: 480px) {
+      .login-wrap { padding: 12px; }
+      .login-card { padding: 28px 20px 24px; }
+      .login-card h1 { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <th:block th:replace="~{common/layout :: bg-cursor}"/>
+
+  <div class="login-wrap">
+    <div class="login-card glass-card">
+      <span class="role-badge">&#128218; 教师端</span>
+      <h1>教师登录</h1>
+      <div class="sub">请输入教工号和密码进入管理后台</div>
+
+      <div th:if="${error}" class="msg-morandi msg-morandi--error" th:text="${error}">错误信息</div>
+
+      <form th:action="@{/teacher/login}" method="post" id="loginForm" novalidate>
+        <div class="form-group">
+          <label for="teacherId">教工号</label>
+          <input type="text" id="teacherId" name="teacherId" class="input-morandi" required
+                 placeholder="请输入教工号" pattern="^[a-zA-Z0-9]{2,20}$"
+                 title="2-20 位字母或数字"/>
+          <div class="field-error" id="teacherIdError">教工号应为 2-20 位字母或数字</div>
+        </div>
+        <div class="form-group">
+          <label for="password">密码</label>
+          <input type="password" id="password" name="password" class="input-morandi" required
+                 placeholder="请输入密码" minlength="6"/>
+          <div class="field-error" id="passwordError">密码长度不能少于 6 位</div>
+        </div>
+        <button type="submit" class="btn-spring">进入管理后台</button>
+      </form>
+
+      <a th:href="@{/}" class="link-morandi back-portal">&#8592; 返回选择入口</a>
+    </div>
+  </div>
+
+  <th:block th:replace="~{common/layout :: scripts}"/>
+  <script>
+    (function () {
+      var form = document.getElementById('loginForm');
+      var teacherId = document.getElementById('teacherId');
+      var password = document.getElementById('password');
+      var teacherIdError = document.getElementById('teacherIdError');
+      var passwordError = document.getElementById('passwordError');
+
+      function validateTeacherId() {
+        var ok = /^[a-zA-Z0-9]{2,20}$/.test(teacherId.value.trim());
+        teacherIdError.classList.toggle('show', !ok);
+        return ok;
+      }
+
+      function validatePassword() {
+        var ok = password.value.length >= 6;
+        passwordError.classList.toggle('show', !ok);
+        return ok;
+      }
+
+      teacherId.addEventListener('blur', validateTeacherId);
+      password.addEventListener('blur', validatePassword);
+
+      form.addEventListener('submit', function (e) {
+        var ok1 = validateTeacherId();
+        var ok2 = validatePassword();
+        if (!ok1 || !ok2) {
+          e.preventDefault();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

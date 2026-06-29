@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title th:text="#{teacher.create.title} + ' - SkillBridge'">创建活动 - SkillBridge</title>
+  <th:block th:replace="~{common/layout :: styles}"/>
+  <style>
+    .create-wrap {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 32px 24px 100px;
+    }
+    .create-card {
+      width: 100%;
+      max-width: 720px;
+      padding: 36px 40px 28px;
+    }
+    .create-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .create-top h1 {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--morandi-text-primary);
+      letter-spacing: 0.3px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--morandi-text-secondary);
+      margin-bottom: 6px;
+    }
+    .hint {
+      font-size: 12px;
+      color: var(--morandi-text-muted);
+      margin-top: 4px;
+    }
+    .action-bar {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.20);
+    }
+    .btn-spring { min-width: 180px; }
+    .tl-pick-section {
+      margin-bottom: 24px;
+      padding: 18px 20px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+    }
+    .tl-pick-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--morandi-text-primary);
+      margin-bottom: 4px;
+    }
+    .tl-pick-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .tl-pick-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      margin: 0;
+    }
+    .tl-pick-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .tl-pick-name {
+      font-size: 14px;
+      color: var(--morandi-text-primary);
+      font-weight: 500;
+    }
+    .tl-pick-meta {
+      font-size: 12px;
+      color: var(--morandi-text-muted);
+    }
+    .tl-pick-divider {
+      text-align: center;
+      font-size: 12px;
+      color: var(--morandi-text-muted);
+      margin-top: 14px;
+      letter-spacing: 0.5px;
+    }
+    .required-mark {
+      color: #C97B7B;
+      margin-left: 2px;
+      font-weight: 600;
+    }
+    .bookmark-guide {
+      background: rgba(139, 164, 184, 0.10);
+      border: 1px solid rgba(139, 164, 184, 0.20);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      font-size: 12px;
+      color: var(--morandi-text-secondary);
+      line-height: 1.7;
+    }
+    .bookmark-guide strong {
+      color: var(--morandi-text-primary);
+    }
+    .bookmark-guide code {
+      background: rgba(255,255,255,0.30);
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 11px;
+    }
+    .tl-pick-item input[type="text"] {
+      padding: 4px 8px;
+      font-size: 13px;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 4px;
+      background: rgba(255,255,255,0.45);
+      width: 180px;
+    }
+    .tl-pick-item input[type="datetime-local"] {
+      padding: 4px 8px;
+      font-size: 12px;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 4px;
+      background: rgba(255,255,255,0.45);
+    }
+    .tl-pick-item .tl-pick-form {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+      margin-right: 12px;
+    }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-link" th:text="#{a11y.skipToMain}">跳到主要内容</a>
+  <th:block th:replace="~{common/layout :: bg-cursor}"/>
+
+  <div class="create-wrap">
+    <div class="create-card glass-card" id="main-content">
+      <div class="create-top">
+        <h1 th:text="#{teacher.create.title}">创建活动</h1>
+        <a th:href="@{/teacher/activities}" class="link-morandi" th:text="#{nav.back} + ' ←'">← 返回活动列表</a>
+      </div>
+
+      <div th:if="${error}" class="msg-morandi msg-morandi--error" th:text="${error}" style="margin-bottom:22px;">错误信息</div>
+      <div th:if="${msg}" class="msg-morandi msg-morandi--success" th:text="${msg}" style="margin-bottom:22px;">成功信息</div>
+
+      <!-- 书签制作指南 -->
+      <div class="bookmark-guide">
+        <strong th:text="#{teacher.create.guide.title}">📌 如何制作 Word 模板？</strong><br/>
+        <span th:utext="#{teacher.create.guide.body}">在 Word 中选中要填写的单元格 → 菜单 <code>插入</code> → <code>书签</code> → 输入英文名称（如 <code>name</code>、<code>idCard</code>、<code>gender</code>）→ 点击"添加"。系统会自动识别书签并生成在线输入框。</span>
+        <a th:href="@{/doc/Word导入功能使用说明书.md}" target="_blank" class="link-morandi" th:text="#{teacher.create.guide.link}">Word 导入功能使用说明书</a>。
+      </div>
+
+      <!-- 从模板库选择 -->
+      <div class="tl-pick-section" th:if="${availableTemplates != null and not #lists.isEmpty(availableTemplates)}">
+        <div class="tl-pick-title" th:text="#{teacher.create.fromLibrary}">从模板库选择（可选）</div>
+        <div class="hint" style="margin-bottom:10px;" th:text="#{teacher.create.fromLibraryHint}">
+          选择已有模板可直接创建活动，可自定义活动名称与截止时间。
+        </div>
+        <div class="tl-pick-list">
+          <form th:each="t : ${availableTemplates}" method="post" th:action="@{/teacher/create}"
+                class="tl-pick-item" enctype="multipart/form-data">
+            <input type="hidden" name="_csrf" th:value="${session.csrfToken}"/>
+            <input type="hidden" name="templateId" th:value="${t.id}"/>
+            <div class="tl-pick-form">
+              <div class="tl-pick-info">
+                <span class="tl-pick-name" th:text="${t.name}">模板名称</span>
+                <span class="tl-pick-meta">
+                  <span th:text="${t.fieldCount != null ? t.fieldCount : 0}">0</span>
+                  <span th:text="#{teacher.create.fieldCount}">个字段</span>
+                  ·
+                  <span th:if="${t.createdAt != null}" th:text="${#temporals.format(t.createdAt, 'yyyy-MM-dd')}">—</span>
+                </span>
+              </div>
+              <div style="display:flex; gap:6px; align-items:center;">
+                <input type="text" name="name" th:value="${t.name}" th:attr="placeholder=#{teacher.create.activityName}" required style="flex:1;"/>
+                <input type="datetime-local" name="deadline" style="min-width:180px;"/>
+              </div>
+            </div>
+            <button type="submit" class="btn-spring" style="min-width:auto;padding:6px 16px;font-size:13px;align-self:center;" th:text="#{teacher.create.useTemplate}">使用</button>
+          </form>
+        </div>
+        <div class="tl-pick-divider" th:text="#{teacher.create.orUpload}">— 或上传新模板 —</div>
+      </div>
+
+      <form th:action="@{/teacher/create}" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="_csrf" th:value="${session.csrfToken}"/>
+        <div class="form-group">
+          <label for="name">
+            <span th:text="#{teacher.create.activityName}">活动名称</span>
+            <span class="required-mark">*</span>
+          </label>
+          <input type="text" id="name" name="name" class="input-morandi" required
+                 th:value="${draftName != null ? draftName : ''}"
+                 th:attr="placeholder=#{teacher.create.placeholder.name}"/>
+        </div>
+        <div class="form-group">
+          <label for="deadline" th:text="#{teacher.create.deadline}">报名截止时间</label>
+          <input type="datetime-local" id="deadline" name="deadline" class="input-morandi"
+                 th:value="${draftDeadline != null ? draftDeadline : ''}"
+                 th:min="${#temporals.format(T(java.time.LocalDateTime).now(), 'yyyy-MM-dd''T''HH:mm')}"/>
+          <div class="hint" th:text="#{teacher.create.deadlineHint}">留空表示不限制截止时间，截止时间不能早于当前时间</div>
+        </div>
+        <div class="form-group">
+          <label for="templateFile">
+            <span th:text="#{teacher.create.templateFile}">Word 模板文件（.docx，需含书签）</span>
+            <span class="required-mark">*</span>
+          </label>
+          <input type="file" id="templateFile" name="templateFile" class="input-morandi" accept=".docx" required style="padding:10px 14px;"/>
+          <div class="hint">
+            <span th:text="#{teacher.create.templateHint}">系统将自动解析模板中的书签并生成在线表单</span><br/>
+            <span style="color: var(--morandi-text-muted);" th:text="#{teacher.create.hint.fileSize}">文件大小不超过 10MB，仅支持 .docx 格式</span>
+          </div>
+        </div>
+        <div class="action-bar">
+          <button type="submit" class="btn-spring" th:text="#{teacher.create.btn.create}">创建活动</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <th:block th:replace="~{common/layout :: scripts}"/>
+</body>
+</html>

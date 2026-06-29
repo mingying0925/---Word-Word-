@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title th:text="#{teacher.confirmFields.title} + ' - SkillBridge'">确认字段 - SkillBridge</title>
+  <th:block th:replace="~{common/layout :: styles}"/>
+  <style>
+    .confirm-wrap {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 32px 24px 100px;
+    }
+    .confirm-card {
+      width: 100%;
+      max-width: 1060px;
+      padding: 36px 40px 28px;
+    }
+    .confirm-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .confirm-top h1 {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--morandi-text-primary);
+      letter-spacing: 0.3px;
+    }
+    .confirm-banner {
+      background: rgba(200,180,160,0.15);
+      border: 1px solid rgba(200,180,160,0.30);
+      border-radius: var(--radius-sm);
+      padding: 12px 18px;
+      margin-bottom: 24px;
+      font-size: 13px;
+      color: #8A7A6A;
+    }
+    .meta-row {
+      display: flex;
+      gap: 28px;
+      background: rgba(255,255,255,0.20);
+      border: 1px solid var(--morandi-border);
+      border-radius: var(--radius-sm);
+      padding: 12px 18px;
+      margin-bottom: 24px;
+      font-size: 13px;
+      color: var(--morandi-text-secondary);
+    }
+    .meta-row strong {
+      color: var(--morandi-text-primary);
+      font-weight: 500;
+    }
+    .form-section {
+      background: rgba(255,255,255,0.16);
+      border: 1px solid var(--morandi-border);
+      border-radius: var(--radius-md);
+      padding: 24px 28px 28px;
+      margin-bottom: 22px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--morandi-text-primary);
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.30);
+    }
+    .section-header::before {
+      content: '';
+      width: 3px;
+      height: 16px;
+      background: var(--morandi-primary);
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .bm-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .bm-table th {
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--morandi-text-muted);
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.25);
+    }
+    .bm-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+      font-size: 13px;
+      color: var(--morandi-text-secondary);
+      vertical-align: middle;
+    }
+    .bm-table tr:last-child td { border-bottom: none; }
+    .bm-table .bm-display {
+      width: 100%;
+      padding: 6px 10px;
+      font-size: 13px;
+      color: var(--morandi-text-primary);
+      background: rgba(255,255,255,0.45);
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 6px;
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color 0.25s var(--spring-smooth),
+                  box-shadow 0.25s var(--spring-smooth);
+    }
+    .bm-table .bm-display:focus {
+      border-color: var(--morandi-primary);
+      box-shadow: 0 0 0 3px var(--morandi-primary-light);
+      background: rgba(255,255,255,0.65);
+    }
+    .bm-table input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--morandi-primary);
+      cursor: pointer;
+    }
+    .type-tag {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 500;
+      background: rgba(139,164,184,0.15);
+      color: var(--morandi-primary);
+    }
+    .form-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .form-table td {
+      padding: 10px 12px;
+      vertical-align: middle;
+      border: 1px solid rgba(0,0,0,0.05);
+      background: rgba(255,255,255,0.08);
+      font-size: 13px;
+      color: var(--morandi-text-secondary);
+    }
+    .form-table td.label-cell {
+      background: rgba(139,164,184,0.05);
+      font-weight: 500;
+      color: var(--morandi-text-primary);
+      text-align: center;
+      white-space: nowrap;
+    }
+    .form-table td.bookmark-cell {
+      background: rgba(255,255,255,0.15);
+    }
+    .action-bar {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.20);
+    }
+    .btn-spring { min-width: 180px; }
+    .btn-ghost {
+      min-width: 180px;
+      padding: 14px 32px;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--morandi-border);
+      background: rgba(255,255,255,0.10);
+      color: var(--morandi-text-secondary);
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.25s var(--spring-smooth);
+    }
+    .btn-ghost:hover {
+      background: rgba(255,255,255,0.20);
+      text-decoration: none;
+    }
+    .table-scroll {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-link" th:text="#{a11y.skipToMain}">跳到主要内容</a>
+  <th:block th:replace="~{common/layout :: bg-cursor}"/>
+
+  <div class="confirm-wrap">
+    <div class="confirm-card glass-card" id="main-content">
+
+      <div class="confirm-top">
+        <h1 th:text="#{teacher.confirmFields.title}">确认解析字段</h1>
+        <form method="post" th:action="@{/teacher/create/cancel}" style="display:inline;">
+          <input type="hidden" name="_csrf" th:value="${session.csrfToken}"/>
+          <input type="hidden" name="draftId" th:value="${draftId}"/>
+          <button type="submit" class="link-morandi" style="background:none;border:none;cursor:pointer;font:inherit;color:inherit;" th:text="#{teacher.confirmFields.cancel}">← 取消</button>
+        </form>
+      </div>
+
+      <div class="confirm-banner" th:text="#{teacher.confirmFields.banner}">
+        请核对以下从 Word 模板解析出的字段与表格结构，确认无误后点击「确认保存」创建活动。
+      </div>
+
+      <div th:if="${error}" class="msg-morandi msg-morandi--error" th:text="${error}" style="margin-bottom:22px;">错误信息</div>
+
+      <div class="meta-row">
+        <span><strong th:text="#{teacher.confirmFields.meta.activityName}">活动名称：</strong><span th:text="${pendingName}">—</span></span>
+        <span><strong th:text="#{teacher.confirmFields.meta.deadline}">截止时间：</strong>
+          <span th:text="${pendingDeadline != null ? #temporals.format(pendingDeadline, 'yyyy-MM-dd HH:mm') : #messages.msg('teacher.confirmFields.deadlineUnlimited')}">—</span>
+        </span>
+        <span><strong th:text="#{teacher.confirmFields.meta.fieldCount}">书签字段数：</strong><span th:text="${#lists.size(bookmarks)}">0</span></span>
+      </div>
+
+      <!-- ===== 字段列表（可编辑） ===== -->
+      <div class="form-section">
+        <div class="section-header" th:text="#{teacher.confirmFields.section.bookmarkConfig}">书签字段配置（可编辑）</div>
+        <div th:if="${#lists.isEmpty(bookmarks)}" class="msg-morandi msg-morandi--error" style="margin-bottom:16px;"
+             th:text="#{teacher.confirmFields.empty}">
+          ⚠ 未解析到任何书签。请确认模板中已插入 Word 书签（在 Word 中：插入 → 书签 → 输入英文名称）。
+          当前无法创建有效活动，请返回重新上传模板。
+        </div>
+        <div class="table-scroll">
+          <table th:if="${not #lists.isEmpty(bookmarks)}" class="bm-table" id="bmTable">
+            <thead>
+              <tr>
+                <th style="width:48px;" th:text="#{teacher.confirmFields.column.index}">序号</th>
+                <th th:text="#{teacher.confirmFields.column.bookmark}">书签名称</th>
+                <th th:text="#{teacher.confirmFields.column.display}">显示名</th>
+                <th style="width:90px;" th:text="#{teacher.confirmFields.column.type}">控件类型</th>
+                <th style="width:70px;">
+                  <span th:text="#{teacher.confirmFields.column.required}">必填</span><br/>
+                  <a href="#" id="selectAllRequired" style="font-size:11px;font-weight:normal;" th:text="#{teacher.confirmFields.selectAll}">全选</a>
+                </th>
+                <th style="width:70px;">
+                  <span th:text="#{teacher.confirmFields.column.enabled}">启用</span><br/>
+                  <a href="#" id="selectAllEnabled" style="font-size:11px;font-weight:normal;" th:text="#{teacher.confirmFields.selectAll}">全选</a>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="bm, iter : ${bookmarks}" class="bm-row">
+                <td th:text="${iter.count}">1</td>
+                <td th:text="${bm['name']}">书签名</td>
+                <td>
+                  <input type="text" class="bm-display" th:value="${bm['displayName'] != null ? bm['displayName'] : bm['name']}" th:attr="placeholder=#{teacher.confirmFields.column.display}"/>
+                </td>
+                <td><span class="type-tag" th:text="${bm['type'] != null ? bm['type'] : 'text'}">text</span></td>
+                <td style="text-align:center;">
+                  <input type="checkbox" class="bm-required" th:checked="${bm['required'] == null or bm['required'] == true}"/>
+                </td>
+                <td style="text-align:center;">
+                  <input type="checkbox" class="bm-enabled" th:checked="${bm['enabled'] == null or bm['enabled'] == true}"/>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top:12px;font-size:12px;color:var(--morandi-text-muted);" th:text="#{teacher.confirmFields.hint}">
+          提示：修改「显示名」可让学生看到更友好的字段标签；取消「必填」可让字段变为选填；取消「启用」可隐藏不需要的字段。点击表头「全选」可批量勾选。
+        </div>
+      </div>
+
+      <!-- ===== 表格结构预览（只读） ===== -->
+      <div class="form-section">
+        <div class="section-header" th:text="#{teacher.confirmFields.section.tablePreview}">表格结构预览</div>
+        <div th:each="table : ${tablesStructure}">
+          <h3 th:if="${#lists.size(tablesStructure) > 1}"
+              style="font-size:14px;font-weight:500;color:var(--morandi-text-secondary);margin-bottom:10px;">
+            <span th:text="#{teacher.confirmFields.tableLabel}">表格</span> <span th:text="${table.tableIndex}"></span>
+          </h3>
+          <div class="table-scroll">
+            <table class="form-table">
+              <tbody>
+                <tr th:each="row : ${table.rows}">
+                  <td th:each="cell : ${row}"
+                      th:attr="rowspan=${cell.rowspan > 1 ? cell.rowspan : null},
+                               colspan=${cell.colspan > 1 ? cell.colspan : null}"
+                      th:classappend="${cell.isBookmark ? 'bookmark-cell' : 'label-cell'}">
+                    <span th:if="${cell.isBookmark}" style="font-size:12px;color:var(--morandi-primary);">
+                      <th:block th:each="bn, i : ${cell.bookmarkNames}">
+                        <span th:text="${bn}">书签</span><span th:if="${!i.last}">、</span>
+                      </th:block>
+                      <span style="color:var(--morandi-text-muted);">（<span th:text="${cell.type}">text</span>）</span>
+                    </span>
+                    <span th:if="${not cell.isBookmark}" th:text="${cell.text}" style="font-size:13px;">单元格文本</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 操作 ===== -->
+      <form th:action="@{/teacher/create/confirm}" method="post" id="confirmForm">
+        <input type="hidden" name="_csrf" th:value="${session.csrfToken}"/>
+        <input type="hidden" name="draftId" th:value="${draftId}"/>
+        <input type="hidden" name="fieldConfigs" id="fieldConfigs" value=""/>
+        <div class="action-bar">
+          <button type="submit" formaction="/teacher/create/cancel" class="btn-ghost" th:text="#{teacher.confirmFields.btn.cancel}">取消</button>
+          <button type="submit" class="btn-spring" id="confirmSaveBtn"
+                  th:disabled="${#lists.isEmpty(bookmarks)}"
+                  th:style="${#lists.isEmpty(bookmarks) ? 'opacity:0.5;cursor:not-allowed;' : ''}">
+            <span th:if="${not #lists.isEmpty(bookmarks)}" th:text="#{teacher.confirmFields.confirmSave}">确认保存</span>
+            <span th:if="${#lists.isEmpty(bookmarks)}" th:text="#{teacher.confirmFields.noBookmark}">无书签，无法保存</span>
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <script th:inline="javascript">
+    // 提交前收集字段配置到隐藏域
+    (function () {
+      var form = document.getElementById('confirmForm');
+      if (!form) return;
+      form.addEventListener('submit', function (e) {
+        // 无书签时阻止提交
+        var saveBtn = document.getElementById('confirmSaveBtn');
+        if (saveBtn && saveBtn.disabled) {
+          e.preventDefault();
+          return;
+        }
+        var rows = document.querySelectorAll('.bm-row');
+        var configs = [];
+        rows.forEach(function (row) {
+          var nameEl = row.querySelector('td:nth-child(2)');
+          var displayEl = row.querySelector('.bm-display');
+          var requiredEl = row.querySelector('.bm-required');
+          var enabledEl = row.querySelector('.bm-enabled');
+          if (nameEl) {
+            configs.push({
+              name: nameEl.textContent.trim(),
+              displayName: displayEl ? displayEl.value.trim() : '',
+              required: requiredEl ? requiredEl.checked : true,
+              enabled: enabledEl ? enabledEl.checked : true
+            });
+          }
+        });
+        document.getElementById('fieldConfigs').value = JSON.stringify(configs);
+      });
+    })();
+
+    // 全选/反选功能
+    (function () {
+      var i18nSelectAll = /*[[#{teacher.confirmFields.selectAll}]]*/ '全选';
+      var i18nSelectNone = /*[[#{teacher.confirmFields.selectNone}]]*/ '全不选';
+      function bindSelectAll(linkId, checkboxClass) {
+        var link = document.getElementById(linkId);
+        if (!link) return;
+        link.addEventListener('click', function (e) {
+          e.preventDefault();
+          var checkboxes = document.querySelectorAll('.' + checkboxClass);
+          if (!checkboxes.length) return;
+          // 检查是否全部已选中，若全选则反选为全不选，否则全选
+          var allChecked = true;
+          checkboxes.forEach(function (cb) { if (!cb.checked) allChecked = false; });
+          checkboxes.forEach(function (cb) { cb.checked = !allChecked; });
+          link.textContent = allChecked ? i18nSelectAll : i18nSelectNone;
+        });
+      }
+      bindSelectAll('selectAllRequired', 'bm-required');
+      bindSelectAll('selectAllEnabled', 'bm-enabled');
+    })();
+  </script>
+
+  <th:block th:replace="~{common/layout :: scripts}"/>
+</body>
+</html>
